@@ -1,10 +1,10 @@
 {
   "titel": "Kugelwolken-Baukasten",
+  "jahrgang": "9-13",
   "thema": "Chemische Bindung",
   "beschreibung": "Atome der ersten drei Perioden im räumlichen Kugelwolkenmodell zu Molekülen und Ionen zusammensetzen und dabei Elektronenpaarbindung, Ionenbindung, räumlichen Bau, Polarität und Lewis-Formel untersuchen.",
   "autor": "Hannes Sander",
   "lizenz": "CC BY-NC-ND 4.0",
   "datum": "2026-10-22",
-  "stichwoerter": ["Kugelwolkenmodell", "Elektronenpaarbindung", "Ionenbindung", "Molekülgeometrie", "Polarität", "Lewis-Formel", "Wasserstoffbrücken", "Konformation", "Protolyse"],
-  "datei": "kugelwolken-baukasten(1).html"
+  "stichwoerter": ["Kugelwolkenmodell", "Elektronenpaarbindung", "Ionenbindung", "Molekülgeometrie", "Polarität", "Lewis-Formel", "Wasserstoffbrücken", "Konformation", "Protolyse"]
 }

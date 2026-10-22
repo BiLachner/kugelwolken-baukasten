@@ -1,7 +1,7 @@
 // Engine-Test: lädt three.js, Engine, Lewis und Aufgaben aus der HTML-Datei und prüft die Chemie.
 // Aufruf: node tests/engine.test.js [Pfad zur HTML-Datei]
 const fs = require('fs'), vm = require('vm'), path = require('path');
-const html = fs.readFileSync(process.argv[2] || path.join(__dirname, '..', 'kugelwolken-baukasten(1).html'), 'utf8');
+const html = fs.readFileSync(process.argv[2] || path.join(__dirname, '..', 'index.html'), 'utf8');
 const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 const ctx = { console, Math, JSON, Object, Array, String, Number, Error, Promise, Uint8Array, TextEncoder, TextDecoder, setTimeout };
 ctx.window = ctx; ctx.globalThis = ctx; ctx.self = ctx; ctx.global = ctx;

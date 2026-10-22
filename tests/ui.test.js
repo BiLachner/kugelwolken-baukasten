@@ -3,7 +3,7 @@
 // Playwright wird normal per require gesucht; sonst Pfad in PLAYWRIGHT_MODULE angeben (siehe tests/README.md).
 const path = require('path'), fs = require('fs');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const file = 'file://' + path.resolve(process.argv[2] || path.join(__dirname, '..', 'kugelwolken-baukasten(1).html'));
+const file = 'file://' + path.resolve(process.argv[2] || path.join(__dirname, '..', 'index.html'));
 const out = process.argv[3] || null;
 const shot = (page, name, opts) => out ? page.screenshot(Object.assign({ path: path.join(out, name) }, opts)) : Promise.resolve();
 if (out) fs.mkdirSync(out, { recursive: true });
