@@ -1,5 +1,13 @@
 # Änderungen am Kugelwolken-Baukasten
 
+## Version 0.10.1 (11.11.2026)
+
+### Verbessert
+
+- **Freie H- und He-Atome:** Die einzige Wolke liegt jetzt kugelsymmetrisch um den Kern, das Elementsymbol steht in der Mitte. Bisher saß der Kern am Rand der Wolke, als gäbe es schon eine Bindungsrichtung. Sobald H eine Bindung eingeht, sieht alles aus wie bisher. Löst man die Bindung, liegt die Wolke wieder mittig.
+- **Li⁺ und Be²⁺:** Die verbleibende Heliumschale liegt ebenfalls mittig um den Kern. Dadurch rücken diese Ionen in Ionenverbindungen etwas näher an ihre Partner. Na⁺, Mg²⁺ und Al³⁺ (Neonschale mit vier Wolken) bleiben unverändert.
+- Ein freies H-Atom kann aus jeder Richtung an einen Partner herangezogen werden.
+
 ## Version 0.10.0 (22.10.2026)
 
 ### Neu: erweiterte Funktionen

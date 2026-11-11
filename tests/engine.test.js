@@ -210,5 +210,33 @@ function attachProton(w, acceptor) {
   });
 }
 
+// Einzelne Wolke der ersten Stufe: ungebunden kugelsymmetrisch um den Kern, gebunden wie bisher versetzt
+{
+  const w = new K.World(), o = new T.Vector3(1, 2, 3);
+  const H = w.addAtom('H', o.clone()), He = w.addAtom('He', new T.Vector3(5, 0, 0));
+  ok(w.centered(H) && w.cloudCenter(H, 0).distanceTo(H.pos) < 1e-9, 'freies H: Wolke mittig um den Kern');
+  ok(w.centered(He) && w.cloudCenter(He, 0).distanceTo(He.pos) < 1e-9, 'He: Wolke mittig um den Kern');
+  ok(Math.abs(w.outerRadius(H) - 0.45) < 1e-9, 'freies H: Außenradius = Wolkenradius');
+  const Li = w.addAtom('Li', new T.Vector3(-5, 0, 0));
+  ok(!w.centered(Li) && w.cloudCenter(Li, 0).distanceTo(Li.pos) > 0.5, 'freies Li: Valenzwolke bleibt außerhalb der inneren Stufe');
+
+  const w2 = new K.World(); build(w2, 'h2');
+  const bl = w2.bondLength(w2.bonds[0]);
+  ok(w2.atoms.every(a => !w2.centered(a)), 'H₂: gebundene Wolken nicht mittig');
+  ok(Math.abs(bl - 0.45 * 2 * 0.92) < 1e-9, 'H₂: Bindungslänge unverändert');
+  w2.breakBond(w2.bonds[0]);
+  ok(w2.atoms.every(a => w2.centered(a)), 'H₂ getrennt: Wolken wieder mittig');
+
+  const w3 = new K.World(); build(w3, 'lif');
+  const li = w3.atoms.find(a => a.sym === 'Li');
+  ok(w3.isIonShell(li) && w3.centered(li), 'Li⁺ in LiF: Heliumschale mittig');
+  const vis = w3.visual(li);
+  ok(vis.clouds.length === 1 && vis.params.d > 0, 'Li⁺: eine Wolke der ersten Stufe');
+
+  const w4 = new K.World(); build(w4, 'nacl');
+  const na = w4.atoms.find(a => a.sym === 'Na');
+  ok(w4.isIonShell(na) && !w4.centered(na), 'Na⁺: Neonschale mit vier Wolken unverändert');
+}
+
 console.log(fails ? fails + ' Fehler' : 'Alle Tests bestanden');
 process.exit(fails ? 1 : 0);

@@ -367,7 +367,7 @@ button { font: inherit; color: inherit; }
 #info.min { min-height: 48px; }
 
 </style>
-<!-- Kugelwolken-Baukasten, Version 0.10.0. © 2026 hannes@sander-lg.de, CC BY-NC-ND 4.0
+<!-- Kugelwolken-Baukasten, Version 0.10.1. © 2026 hannes@sander-lg.de, CC BY-NC-ND 4.0
      (https://creativecommons.org/licenses/by-nc-nd/4.0/). Gilt nicht für die eingebetteten Bestandteile.
      Unabhängige Neuimplementierung, keine offizielle Webversion und keine Verbindung zur Universität Rostock.
      Eingebettet: three.js (MIT), qrcode-generator (MIT), Atkinson Hyperlegible und Lexend (SIL OFL 1.1). -->
@@ -518,7 +518,7 @@ button { font: inherit; color: inherit; }
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="abTitle">
     <div class="shead"><h2 id="abTitle">Lizenz, Quellen und Datenschutz</h2><button class="x" type="button" data-close aria-label="Schließen">×</button></div>
     <section>
-      <h3>Kugelwolken-Baukasten, Version 0.10.0</h3>
+      <h3>Kugelwolken-Baukasten, Version 0.10.1</h3>
       <p>© 2026 Hannes Sander, www.hsander.net. Die App mit Code, Texten, Symbolen und Aufgaben steht unter der Lizenz CC BY-NC-ND 4.0 (Namensnennung – Nicht kommerziell – Keine Bearbeitungen, creativecommons.org/licenses/by-nc-nd/4.0/deed.de). Du darfst sie unverändert und nicht kommerziell nutzen und weitergeben, wenn du Urheber und Lizenz nennst. Veränderte Fassungen dürfen nicht weitergegeben werden. Die eingebetteten Bestandteile behalten ihre eigenen Lizenzen. Die App wird ohne Gewähr bereitgestellt.</p>
     </section>
     <section>
@@ -3101,6 +3101,20 @@ var qrcode = function() {
     return PARAMS[p];
   };
 
+  /* Erste Stufe mit nur einer Wolke ohne Bindungspartner (freies H- oder He-Atom, Li⁺ und Be²⁺ mit
+     Heliumschale): Die Wolke liegt kugelsymmetrisch um den Kern. In einer Bindung rückt sie wie bisher
+     um d zum Partner. */
+  P.centered = function (atom) {
+    if (this.paramsOf(atom) !== PARAMS[1]) return false;
+    if (this.isIonShell(atom)) return true;
+    return atom.clouds.length === 1 && !atom.clouds[0].bond;
+  };
+
+  /* Abstand Wolkenmitte zum Kern, wie gezeichnet */
+  P.cloudOffset = function (atom) {
+    return this.centered(atom) ? 0 : this.paramsOf(atom).d;
+  };
+
   /* Was gezeichnet wird: Wolken (mit Index in atom.clouds oder -1 bei der Ionenschale) */
   P.visual = function (atom) {
     if (this.isIonShell(atom)) {
@@ -3184,7 +3198,7 @@ var qrcode = function() {
   };
 
   P.cloudCenter = function (atom, i) {
-    return atom.pos.clone().add(this.cloudDir(atom, i).multiplyScalar(this.paramsOf(atom).d));
+    return atom.pos.clone().add(this.cloudDir(atom, i).multiplyScalar(this.cloudOffset(atom)));
   };
 
   P.bondsOf = function (atom) {
@@ -3391,7 +3405,7 @@ var qrcode = function() {
     return s.normalize();
   }
 
-  P.outerRadius = function (atom) { var p = this.paramsOf(atom); return p.d + p.rc; };
+  P.outerRadius = function (atom) { return this.cloudOffset(atom) + this.paramsOf(atom).rc; };
 
   P.bondLength = function (bond) {
     var a = this.atom(bond.a), b = this.atom(bond.b);
@@ -4826,7 +4840,7 @@ var qrcode = function() {
     vis.clouds.forEach(function (c) {
       var m = new T.Mesh(sphereGeo, cloudMatFor(c.occ));
       m.scale.setScalar(p.rc);
-      m.position.copy(c.dir).multiplyScalar(c.occ === 0 ? 0 : p.d);   /* leere Wolke des Protons sitzt am Kern */
+      m.position.copy(c.dir).multiplyScalar(c.occ === 0 ? 0 : world.cloudOffset(atom));   /* leere Wolke des Protons sitzt am Kern */
       m.renderOrder = 2;
       g.add(m); v.clouds.push(m);
       if (c.occ) {
@@ -4840,7 +4854,7 @@ var qrcode = function() {
       var cs = makeTextSprite(chargeLabel(q), q > 0 ? '#c2410c' : '#1d4ed8', 0.7);
       R.root.add(cs); v.charge = cs;
     }
-    var w = new T.Mesh(ringGeo, mats.ringMol); w.scale.setScalar(p.d + p.rc + 0.05); w.visible = false; w.renderOrder = 15; g.add(w); v.wire = w;
+    var w = new T.Mesh(ringGeo, mats.ringMol); w.scale.setScalar(world.outerRadius(atom) + 0.05); w.visible = false; w.renderOrder = 15; g.add(w); v.wire = w;
     R.root.add(g);
     return v;
   }
@@ -4928,11 +4942,12 @@ var qrcode = function() {
       if (v.shell !== world.isIonShell(a) || v.q !== world.chargeOf(a)) {
         disposeAtomView(v); v = atomViews[a.id] = buildAtomView(a);
       }
-      var p = world.paramsOf(a);
+      var p = world.paramsOf(a), off = world.cloudOffset(a), outer = off + p.rc;
       v.group.position.copy(a.pos); v.group.quaternion.copy(a.quat);
       var vis = world.visual(a);
       vis.clouds.forEach(function (c, i) {
         var m = v.clouds[i]; if (!m) return;
+        m.position.copy(c.dir).multiplyScalar(c.occ === 0 ? 0 : off);   /* freie Einzelwolke mittig, gebunden zum Partner */
         if (c.idx < 0) { m.visible = true; m.material = mats.double; m.scale.setScalar(p.rc); if (m.userData.dots) m.userData.dots.visible = ui.electrons; return; }
         var cl = a.clouds[c.idx];
         m.visible = !cl.bond || cl.ion === 'gain';
@@ -4964,12 +4979,13 @@ var qrcode = function() {
         var ol = Math.sqrt(ox * ox + oy * oy);
         if (ol < 0.2) { ox = 0.6; oy = 0.8; ol = 1; }
         ox /= ol; oy /= ol;
-        var rd = (p.d + p.rc) * 0.9 + 0.25;
+        var rd = outer * 0.9 + 0.25;
         v.delta.position.copy(a.pos).addScaledVector(camRight, ox * rd).addScaledVector(camUp, oy * rd);
       } else if (tag) {
-        var rr = (p.d + p.rc) * 0.74;
+        var rr = outer * 0.74;
         tag.position.copy(a.pos).addScaledVector(camRight, rr).addScaledVector(camUp, rr);
       }
+      v.wire.scale.setScalar(outer + 0.05);
       v.wire.visible = ui.rings && !!sel[a.id];
       if (ui.rings && sel[a.id]) {
         v.wire.material = a.id === ui.selAtom ? mats.ringSel : mats.ringMol;
@@ -5548,7 +5564,7 @@ var qrcode = function() {
     setRay(e);
     var best = null, bs = 1e9;
     world.atoms.forEach(function (a) {
-      var p = world.paramsOf(a), rr = (p.d + p.rc) * 1.04 + 0.1;
+      var rr = world.outerRadius(a) * 1.04 + 0.1;
       var s = ray.ray.distanceToPoint(a.pos) / rr;
       if (s < 1 && s < bs) { bs = s; best = { type: 'atom', atom: a }; }
     });
