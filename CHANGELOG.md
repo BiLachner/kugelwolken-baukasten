@@ -1,5 +1,18 @@
 # Änderungen am Kugelwolken-Baukasten
 
+## Unveröffentlicht
+
+### Seitenleiste und Bedienung
+
+- Der Reiter „Elemente“ der Seitenleiste heißt jetzt **„Atome“**, sein Bereich „Atome hinzufügen“. Der Tooltip lautet „Periodensystem: Atome hinzufügen“. So ist klar, dass man dort Atome holt. Die Hinweise bei leerer Fläche verweisen auf den neuen Reiter statt auf eine Leiste „unten“.
+- Der Reiter „Anzeige“ heißt jetzt **„Darstellung“** und hat ein Auge als Symbol. So ist er nicht mehr mit dem Menü „Ansicht“ zu verwechseln.
+- **Neuer Reiter „Erweitert“** unter „Atome“. Er enthält den Schalter „Erweiterte Funktionen“ mit einer kurzen Erklärung, dazu „H⁺ Proton hinzufügen“ und „H-Brücken“. Diese beiden sind immer zu sehen und werden erst mit dem Schalter nutzbar. Der Schalter steuert wie bisher auch die Bindungsleiste sowie die Beispiele und Aufgaben zu geladenen Teilchen. Der Eintrag „Drehen um Einfachbindungen“ klappt eine kurze Anleitung zur Newman-Projektion auf. „Mit Ethan ausprobieren“ holt Ethan, wählt die C–C-Bindung und schaltet die erweiterten Funktionen bei Bedarf selbst ein.
+- „Kreisen“ heißt jetzt **„Ansicht kreisen lassen“** und steht im Menü „Ansicht“, weil es die Kamera bewegt.
+- **Ein/Aus-Einträge mit Kippschalter:** Ob ein Eintrag eingeschaltet ist, zeigt jetzt ein Kippschalter und nicht mehr ein leicht getönter Hintergrund.
+- **Atomkugel** als Umschalter mit drei Stellungen (aus | durchsichtig | undurchsichtig). Die Taste U schaltet weiter der Reihe nach um.
+- **Einheitliche Pfeile zum Ein- und Ausklappen:** Infokarte und Aufgabenkarte haben denselben Pfeilknopf. Er zeigt nach unten, wenn die Karte offen ist, und nach rechts, wenn sie zu ist.
+- Die eingeklappte Infokarte zeigt „Nichts ausgewählt.“ bzw. „Die Fläche ist leer.“ und ist nicht mehr leer.
+
 ## Version 0.11.1 (13.11.2026)
 
 - **Neue Lizenz: CC BY-NC-SA 4.0** statt CC BY-NC-ND 4.0. Veränderte Fassungen dürfen jetzt weitergegeben werden, wenn sie nicht kommerziell sind und unter derselben Lizenz stehen.
