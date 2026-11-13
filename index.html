@@ -821,7 +821,7 @@ body { gap: 8px; padding-block: 8px; }
         <li><b>Rot:</b> doppelt besetzte Wolke, also ein freies Elektronenpaar. Rot ist auch die gemeinsame Wolke einer Bindung.</li>
         <li><b>Gelb:</b> innere Energiestufen, vereinfacht dargestellt.</li>
         <li><b>Durchsichtige Kugel:</b> die äußere Energiestufe als Hülle. Sie umschließt die inneren Stufen. Unter „Darstellung“ → „Atomkugel“ lässt sie sich aus- oder undurchsichtig schalten (Taste U).</li>
-        <li><b>Doppel- und Dreifachbindung:</b> zwei bzw. drei gleichwertige, gebogene Wolken („Bananenbindungen“). Die Wolkenanordnung der Atome bleibt dabei tetraedrisch.</li>
+        <li><b>Doppel- und Dreifachbindung:</b> zwei bzw. drei gleichwertige Wolken. Sie liegen dort, wo sich die Wolken der beiden Atome treffen, die Anordnung bleibt also tetraedrisch.</li>
       </ul>
     </section>
     <section>
@@ -3888,7 +3888,7 @@ var qrcode = function() {
       else { name = 'gewinkelt'; angle = '109,5°'; }
     }
     /* Winkel so, wie das Modell sie baut: Richtung einer Bindung = Mittel ihrer Wolken. Bei Mehrfachbindungen
-       bleiben die Wolken tetraedrisch (Bananenbindung), Ethen hat dann 109,5° und 125,3° statt 120°. */
+       bleiben die Wolken tetraedrisch, Ethen hat dann 109,5° und 125,3° statt 120°. */
     var angles = this.bondAngles(atom);
     if (angles.length) {
       var vals = angles.map(function (x) { return x.deg; });
@@ -5092,10 +5092,15 @@ var qrcode = function() {
   }
 
   /* ---------- 3D-Szene ---------- */
-  var mats = {}, sphereGeo, bananaGeo, ringGeo, labelCache = {}, shadowGeo, shadowTex;
+  var mats = {}, sphereGeo, ringGeo, labelCache = {}, shadowGeo, shadowTex;
   var FLOOR_Y = -2.4;   /* Höhe des Bodengitters (siehe makeGrid) */
   var Z_AXIS = new T.Vector3(0, 0, 1);
-  var BANANA_BOW = 1.1;    /* Wölbung der Bananenbindung in der Mitte, relativ zur Dicke der Wolke */
+  /* Erste Stufe (H, He, Li⁺, Be²⁺): gezeichneter Außenradius für Atomkugel, Auswahlkreis und Schatten.
+     Sonst wäre ein gebundenes H (Wolke um d verschoben) fast so groß wie ein C.
+     Real: H/C kovalent ≈ 0,4, van der Waals ≈ 0,7 → 0,55/0,97 ≈ 0,57 liegt dazwischen */
+  var S1_R = 0.55;
+  var S1_NUC = 0.3;  /* Bindung mit H: so weit reicht die Bindungswolke über den H-Kern hinaus */
+  function isS1(p) { return p.inner === 0; }
 
   function cssVar(n, fallback) {
     var v = '';
@@ -5160,13 +5165,6 @@ var qrcode = function() {
     orbit.target = new T.Vector3(0, 0, 0);
 
     sphereGeo = new T.SphereGeometry(1, 28, 20);
-    /* Bananenbindung: Einheitskugel entlang z, in der Mitte nach +y gewölbt, an den Enden (bei den Kernen) auf der Achse */
-    bananaGeo = new T.SphereGeometry(1, 32, 24);
-    bananaGeo.rotateX(Math.PI / 2);   /* Pole auf die z-Achse, damit die Enden rund bleiben */
-    var bp = bananaGeo.attributes.position;
-    for (var bi = 0; bi < bp.count; bi++) bp.setY(bi, bp.getY(bi) + BANANA_BOW * (1 - bp.getZ(bi) * bp.getZ(bi)));
-    bp.needsUpdate = true;
-    bananaGeo.computeVertexNormals();
     ringGeo = new T.RingGeometry(0.965, 1, 72);
     function cloudMat(color, opacity) {
       return new T.MeshPhongMaterial({ color: color, transparent: true, opacity: opacity, shininess: 70, specular: 0x777777, depthWrite: false });
@@ -5336,7 +5334,7 @@ var qrcode = function() {
     /* eigener Schatten je Atom (eigenes Material, weil die Deckkraft von der Höhe abhängt); liegt nicht in der drehenden Gruppe */
     var sh = new T.Mesh(shadowGeo, new T.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
     sh.renderOrder = -1; sh.visible = false; R.root.add(sh); v.shadow = sh;
-    var w = new T.Mesh(ringGeo, mats.ringMol); w.scale.setScalar(world.outerRadius(atom) + 0.05); w.visible = false; w.renderOrder = 15; g.add(w); v.wire = w;
+    var w = new T.Mesh(ringGeo, mats.ringMol); w.scale.setScalar((isS1(p) ? S1_R : world.outerRadius(atom)) + 0.05); w.visible = false; w.renderOrder = 15; g.add(w); v.wire = w;
     R.root.add(g);
     return v;
   }
@@ -5378,9 +5376,36 @@ var qrcode = function() {
     var mid = A.pos.clone().add(B.pos).multiplyScalar(0.5);
     var q = new T.Quaternion().setFromUnitVectors(Z_AXIS, e);
     var ionic = bond.type === 'ionic';
-    /* Mehrfachbindung als Bananenbindungen (Tetraeder teilen Kante bzw. Fläche): gleichwertige Wolken, die an den
-       Kernen auf der Achse liegen und in der Mitte zur Seite ihrer Atomwolken gewölbt sind */
-    var n = bond.order, banana = !ionic && n > 1, off = 0, rad = n === 1 ? 0.36 : (n === 2 ? 0.29 : 0.26);
+    var n = bond.order, off = n === 1 ? 0 : (n === 2 ? 0.17 : 0.21), rad = n === 1 ? 0.36 : (n === 2 ? 0.29 : 0.26);
+    var halfLen = L / 2 + 0.28;
+    if (!ionic) {
+      /* Kugelwolken bleiben Kugelwolken: Die Bindungswolke entsteht aus den beiden einfach besetzten Wolken,
+         hat deren Dicke und umschließt beide früheren Wolkenkugeln (statt lang und schmal über beide Kerne) */
+      var pA = world.paramsOf(A), pB = world.paramsOf(B), rcm = (pA.rc + pB.rc) / 2;
+      var sep = Math.abs(L - pA.d - pB.d);   /* Abstand der früheren Wolkenmitten auf der Achse */
+      halfLen = sep / 2 + rcm;
+      rad = rcm;
+      if (n > 1) {
+        /* Mehrfachbindung: Wolken dort, wo die schrägen Tetraederwolken beider Atome zusammentreffen
+           (Doppelbindung 54,7°, Dreifachbindung 70,5° zur Achse), in normaler Wolkengröße */
+        var dA0 = world.cloudDir(A, bond.ca[0]), dB0 = world.cloudDir(B, bond.cb[0]);
+        var cosA = Math.max(-1, Math.min(1, dA0.dot(e))), cosB = Math.max(-1, Math.min(1, -dB0.dot(e)));
+        var latA = pA.d * Math.sqrt(1 - cosA * cosA), latB = pB.d * Math.sqrt(1 - cosB * cosB);
+        off = (latA + latB) / 2;
+        halfLen = Math.abs(L - pA.d * cosA - pB.d * cosB) / 2 + rcm;
+      }
+      if (n === 1 && (isS1(pA) || isS1(pB))) {
+        /* Bindung mit H: Die H-Wolke verschmilzt mit der Wolke des Partners. Die Bindungswolke reicht von der
+           früheren Partnerwolke bis knapp über den H-Kern hinaus, das H steckt also in ihrem äußeren Ende.
+           Dicke wie die Partnerwolke (bei H–H wie die 1s-Wolke). */
+        var cA = isS1(pA) ? 0 : pA.d, rA = isS1(pA) ? S1_NUC : pA.rc;
+        var cB = isS1(pB) ? L : L - pB.d, rB = isS1(pB) ? S1_NUC : pB.rc;
+        var lo = Math.min(cA - rA, cB - rB), hi = Math.max(cA + rA, cB + rB);
+        mid = A.pos.clone().addScaledVector(e, (lo + hi) / 2);
+        halfLen = (hi - lo) / 2;
+        rad = isS1(pA) && isS1(pB) ? pA.rc : (isS1(pA) ? pB.rc : pA.rc);
+      }
+    }
     if (ionic) { rad = 0.07; off = n === 1 ? 0 : 0.14; }
     var shift = 0;
     if (ui.polar && !ionic) {
@@ -5388,8 +5413,8 @@ var qrcode = function() {
       if (ea && eb && Math.abs(eb - ea) >= 0.4) shift = Math.max(-0.28, Math.min(0.28, (eb - ea) * 0.13));
     }
     for (var k = 0; k < n; k++) {
-      var m = bv.lobes[k], pos = mid.clone(), side = null;
-      if (off || banana) {
+      var m = bv.lobes[k], pos = mid.clone();
+      if (off) {
         var d = world.cloudDir(A, bond.ca[k]);
         d.addScaledVector(e, -d.dot(e));
         if (d.lengthSq() < 1e-4) {
@@ -5398,22 +5423,14 @@ var qrcode = function() {
         }
         d.normalize();
         pos.addScaledVector(d, off);
-        side = d;
       }
       if (shift) pos.addScaledVector(e, shift);
       var sel = ui.selBond === bond.id, r = sel ? rad * 1.22 : rad;
-      m.geometry = banana ? bananaGeo : sphereGeo;
-      m.position.copy(pos);
-      if (banana) {   /* lokal: z entlang der Bindung, +y zur Wölbung */
-        var bx = new T.Vector3().crossVectors(side, e);
-        m.quaternion.setFromRotationMatrix(new T.Matrix4().makeBasis(bx, side, e));
-      } else m.quaternion.copy(q);
-      m.scale.set(r, r, ionic ? L / 2 : L / 2 + 0.28);
-      if (m.userData.dots) {
-        m.userData.dots.visible = ui.electrons;
-        m.userData.dots.position.copy(pos);
-        if (banana) m.userData.dots.position.addScaledVector(side, r * BANANA_BOW);   /* Punkte in die Mitte der Wölbung */
-      }
+      m.position.copy(pos); m.quaternion.copy(q);
+      m.scale.set(r, r, ionic ? L / 2 : halfLen);
+      /* undurchsichtige Atomkugel: Bindungswolken ausblenden, sonst ragen v. a. Mehrfachbindungen aus den Kugeln */
+      m.visible = ui.ball !== 2;
+      if (m.userData.dots) { m.userData.dots.visible = ui.electrons && m.visible; m.userData.dots.position.copy(pos); }
       m.material = ui.selBond === bond.id ? mats.bondSel : (ionic ? mats.ionic : mats.bond);
     }
   }
@@ -5437,7 +5454,7 @@ var qrcode = function() {
       if (v.shell !== world.isIonShell(a) || v.q !== world.chargeOf(a)) {
         disposeAtomView(v); v = atomViews[a.id] = buildAtomView(a);
       }
-      var p = world.paramsOf(a), off = world.cloudOffset(a), outer = off + p.rc;
+      var p = world.paramsOf(a), off = world.cloudOffset(a), outer = isS1(p) ? S1_R : off + p.rc;   /* H gebunden wie frei gleich groß */
       v.group.position.copy(a.pos); v.group.quaternion.copy(a.quat);
       var vis = world.visual(a);
       vis.clouds.forEach(function (c, i) {

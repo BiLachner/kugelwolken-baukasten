@@ -5,10 +5,12 @@
 ### Modelltreue (Abgleich mit der Rostocker Beschreibung des KWM)
 
 - **Winkel in der Infokarte so, wie das Modell sie baut:** Die Wolken bleiben auch bei Mehrfachbindungen tetraedrisch. Bei Ethen steht deshalb jetzt „H–C–H 109,5°, C–C–H 125,3°“ statt „120°“. Wasser, Methan, CO₂ und Ethin sind unverändert.
-- **Gebogene Bananenbindungen:** Doppel- und Dreifachbindungen bestehen aus zwei bzw. drei gleichwertigen Wolken. Sie liegen an den Kernen auf der Achse und sind in der Mitte zur Seite ihrer Atomwolken gewölbt. Bisher waren es gerade, seitlich versetzte Ellipsoide.
+- **Bindungswolken bleiben Kugelwolken** (Beitrag von Birgit Lachner): Eine Bindungswolke hat die Dicke der beiden einfach besetzten Wolken, aus denen sie entsteht, und umschließt beide. Bisher war sie lang und schmal und reichte über beide Kerne hinaus. Doppel- und Dreifachbindungen bestehen aus zwei bzw. drei solchen Wolken dort, wo sich die tetraedrischen Wolken der Atome treffen. In den Schulquellen zum KWM sind alle Wolken kugelförmig, gebogene Bananenbindungen stammen aus dem Orbitalmodell.
+- **H steckt in der Bindungswolke:** Bei einer Bindung mit H reicht die Wolke vom Partner bis knapp über den H-Kern hinaus. Das H sitzt im äußeren Ende der Wolke.
+- **H-Atomkugel kleiner:** Ein gebundenes H hatte als Atomkugel fast die Größe eines C-Atoms. Jetzt sind Atomkugel, Auswahlkreis und Schatten bei H, He, Li⁺ und Be²⁺ immer gleich groß, gebunden wie frei (H : C etwa 0,57). Bei undurchsichtiger Atomkugel sind die Bindungswolken ausgeblendet.
 - **Atomkugel standardmäßig durchsichtig:** Die Hülle der äußeren Energiestufe ist von Anfang an zu sehen, wie in der Rostocker Darstellung („jede Energiestufe umschließt die tieferen“). Gespeicherte Einstellungen bleiben erhalten.
 - **Ziehen an einer Bindungswolke bewegt das Molekül** (bzw. dreht oder hebt es, je nach Modus). Bisher drehte sich dabei die Ansicht, obwohl „Bewegen“ gewählt war. Weil ein Molekül im KWM großteils aus Bindungswolken besteht, passierte das sehr oft. Antippen ohne Ziehen wählt die Bindung wie bisher, die Ansicht dreht man auf der freien Fläche.
-- Die Hilfe erklärt unter „Farben“ die durchsichtige Hülle und die Bananenbindungen. Die inneren Stufen bleiben bewusst gelb (Rostock nennt Grün als optionale Konvention).
+- Die Hilfe erklärt unter „Farben“ die durchsichtige Hülle und die Mehrfachbindungen. Die inneren Stufen bleiben bewusst gelb (Rostock nennt Grün als optionale Konvention).
 
 ### Seitenleiste und Bedienung
 
