@@ -306,6 +306,37 @@ button { font: inherit; color: inherit; }
   background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); font-size: 0.92rem;
 }
 #taskcard[hidden] { display: none; }
+
+/* Seitenleiste „Anzeige“ am rechten Rand (Reiter + ausklappbarer Bereich) */
+#toolbar { max-width: calc(100% - 82px); }
+#taskcard { right: 66px; width: min(320px, calc(100% - 82px)); }
+@media (min-width: 701px) { #bondbar { right: 66px; } }
+#side {
+  position: absolute; z-index: 6; top: 10px; right: 10px; bottom: 10px;
+  display: flex; align-items: flex-start;
+  pointer-events: none;   /* leere Fläche unter der Leiste bleibt bedienbar */
+}
+#side > * { pointer-events: auto; }
+.side-tab {
+  flex: none; width: 46px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 0;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); cursor: pointer;
+  font-size: 0.8rem; font-weight: 700;
+}
+.side-tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.side-tab span { writing-mode: vertical-rl; transform: rotate(180deg); letter-spacing: 0.02em; }
+.side-tab:hover { background: var(--surface-2); }
+#side.open .side-tab { background: var(--surface-2); border-right: 0; border-radius: 14px 0 0 14px; }
+.side-body {
+  width: min(250px, calc(100vw - 110px)); max-height: 100%; min-height: 0; overflow-y: auto; padding: 6px 6px 8px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 0 14px 14px 14px; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.side-body[hidden] { display: none; }
+.side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 4px 6px 8px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.side-head h2 { margin: 0; font: 700 1rem/1.2 var(--font-display); }
+.side-head .x { min-width: 36px; min-height: 36px; }
+.side-list { display: flex; flex-direction: column; gap: 2px; }
+.side-list .mi[hidden] { display: none; }
 #taskcard summary { cursor: pointer; padding: 10px 12px; font: 700 1rem/1.25 var(--font-display); display: flex; gap: 8px; align-items: center; justify-content: space-between; min-height: 44px; }
 #taskcard .tc-body { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
 #taskcard p, #taskcard ol { margin: 0; }
@@ -366,8 +397,132 @@ button { font: inherit; color: inherit; }
 #info.min { gap: 0; padding-top: 10px; padding-bottom: 10px; }
 #info.min { min-height: 48px; }
 
+/* ==========================================================================
+   Ruhigere Oberfläche (Testversion): kompakter, flacher, weniger Fettdruck.
+   Die Modellfarben (blau/rot/gelb) bleiben die einzigen kräftigen Farben;
+   Bedienelemente treten zurück. Nur CSS, keine Änderung der Fachlogik.
+   ========================================================================== */
+:root {
+  --line: #d5dee7;
+  --shadow: 0 1px 2px rgba(20, 32, 43, 0.06), 0 4px 12px rgba(20, 32, 43, 0.07);
+  --on-bg: #dfe8f2;        /* aktiver Knopf: getönt statt schwarz gefüllt */
+  --on-ink: #14202b;
+  --t-metal: #f7efe5;
+  --t-nonmetal: #eaf2fb;
+  --t-noble: #f1edf8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --line: #2a3846;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.3);
+    --on-bg: #2a3c4e; --on-ink: #e8eef4;
+    --t-metal: #2e2720; --t-nonmetal: #1a2c40; --t-noble: #251f35;
+  }
+}
+:root[data-theme="dark"] {
+  --line: #2a3846;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.3);
+  --on-bg: #2a3c4e; --on-ink: #e8eef4;
+  --t-metal: #2e2720; --t-nonmetal: #1a2c40; --t-noble: #251f35;
+}
+::selection { background: rgba(59, 123, 240, 0.22); }
+
+/* Kopfzeile */
+body { gap: 8px; padding-block: 8px; }
+.brand h1 { font-size: 1.05rem; }
+.brand p { font-size: 0.8rem; margin-top: 1px; }
+.top-actions { gap: 6px; }
+.pill { min-height: 38px; padding: 0 12px; gap: 6px; font-weight: 400; font-size: 0.9rem; }
+.pill svg { width: 18px; height: 18px; }
+
+/* Arbeitsfläche */
+#stage { border-radius: 14px; }
+
+/* Werkzeugleiste */
+#toolbar { top: 8px; left: 8px; padding: 3px; gap: 2px; border-radius: 12px; }
+.tb { width: 50px; min-height: 48px; padding: 5px 2px 3px; gap: 2px; border-radius: 9px; font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+.tb { width: 54px; }
+.tb svg { width: 20px; height: 20px; stroke-width: 1.8; color: var(--ink); }
+.tb:hover:not(:disabled) { color: var(--ink); }
+.tb.on, .tb.on:hover:not(:disabled) { background: var(--on-bg); color: var(--on-ink); }
+.tb-sep { margin: 8px 2px; }
+.menu { border-radius: 12px; padding: 4px; min-width: 190px; }
+.mi { min-height: 40px; padding: 4px 10px; gap: 10px; border-radius: 8px; font-size: 0.88rem; font-weight: 400; }
+.mi svg { width: 19px; height: 19px; stroke-width: 1.8; }
+.mi.on, .mi.on:hover:not(:disabled) { background: var(--on-bg); color: var(--on-ink); }
+.mi[data-key]::after { font-weight: 400; font-size: 0.7rem; color: var(--muted); opacity: 1; padding: 1px 5px; border: 1px solid var(--line); border-radius: 5px; }
+
+/* Hinweiszeile */
+#status { top: 66px; padding: 6px 12px; border-radius: 10px; font-size: 0.85rem; }
+
+/* Infokarte */
+#info { left: 8px; bottom: 8px; width: min(260px, calc(100% - 16px)); padding: 10px 12px; gap: 6px; border-radius: 12px; font-size: 0.88rem; }
+#info .formula { font-size: 1.35rem; }
+#info .mname { font-size: 0.85rem; }
+#info .tip, #info .geo { font-size: 0.84rem; }
+#info .infotoggle { width: 28px; height: 28px; border-radius: 7px; font-size: 0.85rem; color: var(--muted); }
+.legend { padding-top: 6px; gap: 0 10px; font-size: 0.76rem; }
+.legend button.leg { min-height: 28px; padding: 0 4px; }
+.dot { width: 16px; height: 11px; font-size: 8px; }
+
+/* Hilfekarte und Aufgabenkarte links unter der Werkzeugleiste (rechts liegen die ausklappbaren Bereiche) */
+#coach, #taskcard { top: 70px; left: 8px; right: auto; max-height: calc(100% - 80px); border-radius: 12px; }
+#coach { width: min(290px, calc(100% - 76px)); }
+#taskcard { width: min(300px, calc(100% - 76px)); }
+#coach h2 { font-size: 0.95rem; }
+#coach .pill { min-height: 34px; }
+
+/* Bindungsleiste */
+#bondbar { bottom: 8px; padding: 6px 8px; gap: 6px; border-radius: 12px; }
+@media (min-width: 701px) { #bondbar { right: 60px; } }
+.sq { min-width: 42px; min-height: 42px; padding: 0 12px; border-radius: 10px; font-size: 1rem; }
+
+/* Seitenleiste rechts: feste Reiterleiste am Rand („Anzeige“, „Elemente“), Bereich klappt links daneben auf */
+#toolbar { max-width: calc(100% - 70px); }
+#side { top: 8px; right: 8px; bottom: 8px; flex-direction: row; }
+.side-tabs { order: 2; flex: none; display: flex; flex-direction: column; gap: 6px; }
+.side-panels { order: 1; display: flex; max-height: 100%; min-height: 0; margin-right: 6px; }
+.side-panels:empty, #side:not(.open) .side-panels { display: none; }
+.side-tab { width: 42px; padding: 10px 0; gap: 6px; border-radius: 12px; font-size: 0.74rem; font-weight: 400; color: var(--muted); }
+.side-tab svg { width: 19px; height: 19px; stroke-width: 1.8; color: var(--ink); }
+#side.open .side-tab { background: var(--surface); border-right: 1px solid var(--line); border-radius: 12px; }
+#side .side-tab.on, #side .side-tab.on:hover { background: var(--on-bg); color: var(--on-ink); }
+#side .side-body, #side #dock {
+  max-height: 100%; min-height: 0; overflow-y: auto; align-self: flex-start;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow);
+}
+.side-body { width: min(256px, calc(100vw - 110px)); padding: 4px 4px 6px; }
+.side-head { padding: 2px 2px 4px 8px; margin-bottom: 2px; }
+.side-head h2 { font-size: 0.9rem; }
+.side-head .x, .dock-head .x { min-width: 32px; min-height: 32px; font-size: 1rem; }
+
+/* Periodensystem als Bereich der Seitenleiste */
+#side #dock { width: min(340px, calc(100vw - 110px)); padding: 4px 8px 10px; }
+#side #dock[hidden] { display: none; }
+#side #dockToggle { display: none; }               /* ein- und ausklappen übernimmt der Reiter */
+#side #dock.closed #pse { display: grid; }
+.dock-head { min-height: 36px; gap: 6px; padding: 0 0 4px 2px; border-bottom: 1px solid var(--line); }
+.dock-head h2 { font-size: 0.9rem; }
+.dock-head .hint { display: none; }
+.dock-toggle { min-height: 30px; padding: 0 10px; font-size: 0.78rem; font-weight: 400; }
+#btnProton { margin-left: auto; }
+#pse { grid-template-columns: 14px repeat(8, minmax(0, 1fr)); gap: 3px; margin-top: 6px; }
+#pse .gh, #pse .ph { font-size: 0.7rem; font-weight: 400; }
+.el { min-height: 48px; justify-content: flex-end; padding: 0 2px 6px; border-radius: 8px; border-color: transparent; }   /* Symbol unten, Ordnungszahl oben links */
+.el:hover { border-color: var(--muted); }
+.el .nm { display: none; }                          /* Name erscheint als Tooltip */
+.el .sym { font-size: 1.05rem; }
+.el .z { font-size: 0.68rem; top: 2px; left: 4px; line-height: 1; }
+/* dunkler Modus: Rot auf hellerem Grund beim Überfahren hätte zu wenig Kontrast */
+.sq.danger:hover:not(:disabled) { background: var(--surface-2); border-color: var(--c-double); }
+
+/* Dialoge */
+.sheet { border-radius: 14px; }
+.ex { min-height: 64px; border-radius: 10px; }
+.ex b { font-size: 1.15rem; }
+
 </style>
-<!-- Kugelwolken-Baukasten, Version 0.10.1. © 2026 hannes@sander-lg.de, CC BY-NC-ND 4.0
+<!-- Kugelwolken-Baukasten, Version 0.11.0. © 2026 hannes@sander-lg.de, CC BY-NC-ND 4.0
      (https://creativecommons.org/licenses/by-nc-nd/4.0/). Gilt nicht für die eingebetteten Bestandteile.
      Unabhängige Neuimplementierung, keine offizielle Webversion und keine Verbindung zur Universität Rostock.
      Eingebettet: three.js (MIT), qrcode-generator (MIT), Atkinson Hyperlegible und Lexend (SIL OFL 1.1). -->
@@ -518,7 +673,7 @@ button { font: inherit; color: inherit; }
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="abTitle">
     <div class="shead"><h2 id="abTitle">Lizenz, Quellen und Datenschutz</h2><button class="x" type="button" data-close aria-label="Schließen">×</button></div>
     <section>
-      <h3>Kugelwolken-Baukasten, Version 0.10.1</h3>
+      <h3>Kugelwolken-Baukasten, Version 0.11.0</h3>
       <p>© 2026 Hannes Sander, www.hsander.net. Die App mit Code, Texten, Symbolen und Aufgaben steht unter der Lizenz CC BY-NC-ND 4.0 (Namensnennung – Nicht kommerziell – Keine Bearbeitungen, creativecommons.org/licenses/by-nc-nd/4.0/deed.de). Du darfst sie unverändert und nicht kommerziell nutzen und weitergeben, wenn du Urheber und Lizenz nennst. Veränderte Fassungen dürfen nicht weitergegeben werden. Die eingebetteten Bestandteile behalten ihre eigenen Lizenzen. Die App wird ohne Gewähr bereitgestellt.</p>
     </section>
     <section>
@@ -4440,7 +4595,7 @@ var qrcode = function() {
 
   /* ---------- Zustand ---------- */
   var world = new K.World();
-  var ui = { mode: 'move', snap: true, labels: true, spin: false, selAtom: null, selBond: null, polar: false, lewis: false, electrons: false, rings: true, infoMin: false, advanced: false, hbonds: false };
+  var ui = { mode: 'move', snap: true, labels: true, spin: false, selAtom: null, selBond: null, polar: false, lewis: false, electrons: false, rings: true, infoMin: false, advanced: false, hbonds: false, shadow: true, noShadow: false, ball: 0 /* Atomkugel: 0 aus, 1 durchsichtig, 2 undurchsichtig */ };
   var hist = { undo: [], redo: [] };
   var anim = null;
   var overlapKeys = {}, overlapSig = '';
@@ -4475,6 +4630,9 @@ var qrcode = function() {
     lewis: '<path d="M4 12h9M13 12l4-5M13 12l4 5"/><circle cx="19" cy="6" r="1.3"/><circle cx="19" cy="18" r="1.3"/>',
     image: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4 3 3 3-3 5 4"/>',
     ring: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2" fill="currentColor"/>',
+    pse: '<rect x="3" y="4" width="5" height="5" rx="1"/><rect x="16" y="4" width="5" height="5" rx="1"/><rect x="3" y="11" width="5" height="5" rx="1"/><rect x="9.5" y="11" width="5" height="5" rx="1"/><rect x="16" y="11" width="5" height="5" rx="1"/><path d="M3 19.5h18"/>',
+    shadow: '<circle cx="12" cy="9" r="5"/><ellipse cx="12" cy="19.5" rx="7" ry="2" fill="currentColor" opacity="0.5"/>',
+    ball: '<circle cx="12" cy="12" r="9"/><path d="M3 12c0 2.5 4 4.5 9 4.5s9-2 9-4.5"/><path d="M7.5 7.5a6 6 0 0 1 4-2" />',
     dots: '<circle cx="8" cy="12" r="2.4" fill="currentColor"/><circle cx="16" cy="12" r="2.4" fill="currentColor"/><circle cx="12" cy="12" r="9"/>',
     polar: '<path d="M4 12h16M16 8l4 4-4 4"/><path d="M6 7v4M4 9h4"/>',
     hbond: '<circle cx="4.5" cy="12" r="2.2"/><circle cx="19.5" cy="12" r="2.2"/><circle cx="9.5" cy="12" r="0.9" fill="currentColor"/><circle cx="12" cy="12" r="0.9" fill="currentColor"/><circle cx="14.5" cy="12" r="0.9" fill="currentColor"/>',
@@ -4499,7 +4657,9 @@ var qrcode = function() {
     { id: 'polar', group: 'view', label: 'Polarität', icon: 'polar', tip: 'Ladungsverschiebung (δ+ / δ−) und Dipol anzeigen', key: 'P' },
     { id: 'lewis', group: 'view', label: 'Lewis-Formel', icon: 'lewis', tip: 'Lewis-Formel des gewählten Moleküls in der Infokarte zeigen', key: 'F' },
     { id: 'electrons', group: 'view', label: 'Elektronenzahl', icon: 'dots', tip: 'Elektronen als Punkte in den Wolken zeigen (ein oder zwei), unabhängig von der Farbe', key: 'E' },
-    { id: 'rings', group: 'view', label: 'Auswahlkreise', icon: 'ring', tip: 'Kreise um gewählte Atome ein- und ausblenden', key: 'K' },
+    { id: 'shadow', group: 'view', label: 'Schatten', icon: 'shadow', tip: 'Schatten der Atome auf dem Boden: zeigt, wie hoch ein Atom schwebt', key: 'B' },
+    { id: 'ball', group: 'view', label: 'Atomkugel: aus', icon: 'ball', tip: 'Kugel um jedes Atom: aus, durchsichtig, undurchsichtig (zeigt: Atome sind Kugeln, die sich in der Bindung berühren)', key: 'U' },
+    { id: 'rings', group: 'view', label: 'Auswahlkreise', icon: 'ring', tip: 'Kreise um gewählte Atome ein- und ausblenden (bei eingeschalteter Atomkugel ausgeblendet)', key: 'K' },
     { id: 'spin', group: 'view', label: 'Kreisen', icon: 'orbit', tip: 'Ansicht automatisch drehen' },
     { id: 'hbonds', group: 'view', label: 'H-Brücken', icon: 'hbond', tip: 'Wasserstoffbrücken zwischen Molekülen als Punktlinie zeigen' },
     { id: 'advanced', group: 'view', label: 'Erweitert', icon: 'advanced', tip: 'Erweiterte Funktionen: Protonen, Wasserstoffbrücken, Drehen um Einfachbindungen' },
@@ -4535,12 +4695,66 @@ var qrcode = function() {
     var first = m.querySelector('button:not(:disabled)'); if (first) first.focus();
   }
 
+  /* Seitenleiste rechts: Reiter „Anzeige“ und „Elemente“; es ist höchstens ein Bereich offen */
+  var SIDE_KEY = 'kwm.sidepanel';
+  var SIDE_PANELS = [
+    { key: 'view', tab: 'sideToggle', panel: 'sideBody', label: 'Anzeige' },
+    { key: 'pse', tab: 'tabPse', panel: 'dock', label: 'Elemente' }
+  ];
+  var sideOpen = null;
+  function setSide(which) {
+    sideOpen = which || null;
+    $('side').classList.toggle('open', !!sideOpen);
+    SIDE_PANELS.forEach(function (s) {
+      var on = sideOpen === s.key, tb = $(s.tab);
+      tb.classList.toggle('on', on);
+      tb.setAttribute('aria-expanded', on ? 'true' : 'false');
+      tb.title = s.label + (on ? ' einklappen' : ' ausklappen');
+      $(s.panel).hidden = !on;
+    });
+    try { localStorage.setItem(SIDE_KEY, sideOpen || 'none'); } catch (e) { /* Speicher nicht verfügbar */ }
+  }
+  function buildSide(stage) {
+    var side = document.createElement('aside');
+    side.id = 'side'; side.setAttribute('aria-label', 'Seitenleiste');
+    function tab(id, panel, icon, text) {
+      return '<button type="button" id="' + id + '" class="side-tab" aria-controls="' + panel + '" aria-expanded="false">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[icon] + '</svg><span>' + text + '</span></button>';
+    }
+    side.innerHTML =
+      '<div class="side-tabs">' + tab('sideToggle', 'sideBody', 'tag', 'Anzeige') + tab('tabPse', 'dock', 'pse', 'Elemente') + '</div>' +
+      '<div class="side-panels" id="sidePanels">' +
+        '<div id="sideBody" class="side-body" hidden>' +
+          '<div class="side-head"><h2>Anzeige</h2><button type="button" class="x" id="sideClose" aria-label="Anzeige einklappen">›</button></div>' +
+          '<div id="sideList" class="side-list" role="group" aria-label="Anzeige"></div>' +
+        '</div>' +
+      '</div>';
+    stage.appendChild(side);
+    /* Periodensystem aus der Leiste unter der Fläche in die Seitenleiste holen, mit eigenem Einklapp-Knopf */
+    var dock = $('dock');
+    $('sidePanels').appendChild(dock);
+    var dc = document.createElement('button');
+    dc.type = 'button'; dc.className = 'x'; dc.id = 'dockClose'; dc.setAttribute('aria-label', 'Elemente einklappen'); dc.textContent = '›';
+    dock.querySelector('.dock-head').appendChild(dc);
+    SIDE_PANELS.forEach(function (s) {
+      $(s.tab).addEventListener('click', function () { setSide(sideOpen === s.key ? null : s.key); });
+    });
+    $('sideClose').addEventListener('click', function () { setSide(null); $('sideToggle').focus(); });
+    dc.addEventListener('click', function () { setSide(null); $('tabPse').focus(); });
+    var start = 'pse';   /* beim ersten Start: Elemente offen, damit man gleich Atome holen kann */
+    try { var st = localStorage.getItem(SIDE_KEY); if (st) start = st === 'none' ? null : st; } catch (e) { /* Speicher nicht verfügbar */ }
+    setSide(start === 'view' || start === 'pse' ? start : null);
+  }
+
   function buildToolbar() {
     var bar = $('toolbar'), stage = $('stage');
+    buildSide(stage);
     TOOLS.forEach(function (t) {
       if (t.sep) { var s = document.createElement('div'); s.className = 'tb-sep'; s.setAttribute('role', 'separator'); bar.appendChild(s); return; }
       var host = bar, cls = 'tb';
-      if (t.group) {
+      if (t.group === 'view') {
+        host = $('sideList'); cls = 'mi';
+      } else if (t.group) {
         if (!menuEls[t.group]) {
           var G = GROUPS[t.group];
           var gb = document.createElement('button');
@@ -4579,6 +4793,9 @@ var qrcode = function() {
     [['snap', ui.snap], ['labels', ui.labels], ['polar', ui.polar], ['lewis', ui.lewis], ['electrons', ui.electrons], ['rings', ui.rings], ['spin', ui.spin], ['hbonds', ui.hbonds], ['advanced', ui.advanced]].forEach(function (p) {
       tbEls[p[0]].classList.toggle('on', p[1]); tbEls[p[0]].setAttribute('aria-pressed', p[1] ? 'true' : 'false');
     });
+    tbEls.shadow.classList.toggle('on', ui.shadow); tbEls.shadow.setAttribute('aria-pressed', ui.shadow ? 'true' : 'false');
+    tbEls.ball.classList.toggle('on', ui.ball > 0); tbEls.ball.setAttribute('aria-pressed', ui.ball > 0 ? 'true' : 'false');
+    tbEls.ball.querySelector('span').textContent = 'Atomkugel: ' + ['aus', 'durchsichtig', 'undurchsichtig'][ui.ball];
     tbEls.hbonds.hidden = !ui.advanced;
     $('btnProton').hidden = !ui.advanced;
     Array.prototype.forEach.call(document.querySelectorAll('.adv-only'), function (x) { x.hidden = !ui.advanced; });
@@ -4589,7 +4806,7 @@ var qrcode = function() {
     tbEls.clear.disabled = !world.atoms.length;
     tbEls.connect.hidden = ui.snap;
     var a = ui.selAtom ? world.atom(ui.selAtom) : null;
-    tbEls.connect.disabled = !(a && world.findOverlaps(world.component(a), K.REACH).length);
+    tbEls.connect.disabled = bondLocked() || !(a && world.findOverlaps(world.component(a), K.REACH).length);
   }
 
   function onTool(id) {
@@ -4607,6 +4824,8 @@ var qrcode = function() {
       case 'lewis': ui.lewis = !ui.lewis; refresh(); saveSoon(); if (ui.lewis && !(ui.selAtom || ui.selBond)) say('Wähle ein Atom an, um seine Lewis-Formel zu sehen.', '', 3000); break;
       case 'electrons': ui.electrons = !ui.electrons; refresh(); saveSoon(); break;
       case 'rings': ui.rings = !ui.rings; refresh(); saveSoon(); say(ui.rings ? 'Auswahlkreise an.' : 'Auswahlkreise aus.', '', 2000); break;
+      case 'shadow': ui.shadow = !ui.shadow; refresh(); saveSoon(); say(ui.shadow ? 'Schatten an: Je höher ein Atom schwebt, desto größer und blasser sein Schatten.' : 'Schatten aus.', '', 2500); break;
+      case 'ball': ui.ball = (ui.ball + 1) % 3; refresh(); saveSoon(); say(['Atomkugel aus.', 'Atomkugel durchsichtig: Die Wolken liegen innerhalb der Atomkugel.', 'Atomkugel undurchsichtig: zum Betrachten. Bindungen bilden oder lösen geht hier nicht.'][ui.ball], '', 3000); break;
       case 'png': exportPng(); break;
       case 'spin': ui.spin = !ui.spin; syncToolbar(); break;
       case 'hbonds': ui.hbonds = !ui.hbonds; refresh(); saveSoon(); say(ui.hbonds ? 'Wasserstoffbrücken an: Bringe ein H-Atom an N, O oder F nah an ein freies Elektronenpaar eines anderen Moleküls.' : 'Wasserstoffbrücken aus.', 'ok', 4000); break;
@@ -4672,7 +4891,8 @@ var qrcode = function() {
   }
 
   /* ---------- 3D-Szene ---------- */
-  var mats = {}, sphereGeo, ringGeo, labelCache = {};
+  var mats = {}, sphereGeo, ringGeo, labelCache = {}, shadowGeo, shadowTex;
+  var FLOOR_Y = -2.4;   /* Höhe des Bodengitters (siehe makeGrid) */
   var Z_AXIS = new T.Vector3(0, 0, 1);
 
   function cssVar(n, fallback) {
@@ -4704,16 +4924,18 @@ var qrcode = function() {
     return l;
   }
 
-  function labelTex(sym) {
-    if (labelCache[sym]) return labelCache[sym];
+  /* sel = gewähltes Atom: blauer statt schwarzer Rand ums Symbol (Auswahlhinweis ohne Kreis) */
+  function labelTex(sym, sel) {
+    var key = sel ? sym + '|sel' : sym;
+    if (labelCache[key]) return labelCache[key];
     var c = document.createElement('canvas'); c.width = c.height = 128;
     var x = c.getContext('2d');
     x.font = '700 74px "Atkinson Hyperlegible", system-ui, sans-serif';
     x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round';
-    x.lineWidth = 14; x.strokeStyle = 'rgba(12,20,28,0.92)'; x.strokeText(sym, 64, 68);
+    x.lineWidth = sel ? 18 : 14; x.strokeStyle = sel ? 'rgba(27,100,214,0.95)' : 'rgba(12,20,28,0.92)'; x.strokeText(sym, 64, 68);
     x.fillStyle = '#ffffff'; x.fillText(sym, 64, 68);
     var t = new T.CanvasTexture(c); t.anisotropy = 4;
-    labelCache[sym] = t;
+    labelCache[key] = t;
     return t;
   }
 
@@ -4750,6 +4972,17 @@ var qrcode = function() {
     mats.nucleus = new T.MeshPhongMaterial({ color: 0x1b2733, shininess: 40 });
     mats.empty = cloudMat(0x8a97a6, 0.16);   /* leere Wolke des Protons */
     mats.hb = new T.MeshBasicMaterial({ color: 0x14202b });   /* Punkte der Wasserstoffbrücke */
+    /* Atomkugel: durchsichtige Hülle um das ganze Atom (undurchsichtig: ballSolidFor) */
+    mats.ballGlass = new T.MeshPhongMaterial({ color: 0x9fb0c2, transparent: true, opacity: 0.2, shininess: 20, specular: 0x2a2a2a, depthWrite: false });
+    /* Schatten: weiche dunkle Scheibe (radialer Verlauf) waagerecht auf dem Boden */
+    shadowGeo = new T.PlaneGeometry(2, 2); shadowGeo.rotateX(-Math.PI / 2);
+    (function () {
+      var c = document.createElement('canvas'); c.width = c.height = 128;
+      var x = c.getContext('2d'), gr = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+      gr.addColorStop(0, 'rgba(20,32,43,0.38)'); gr.addColorStop(0.55, 'rgba(20,32,43,0.2)'); gr.addColorStop(1, 'rgba(20,32,43,0)');
+      x.fillStyle = gr; x.fillRect(0, 0, 128, 128);
+      shadowTex = new T.CanvasTexture(c);
+    })();
     /* Auswahlmarkierung: flacher Ring in Bedienfarbe, nicht in Modellfarben */
     mats.ringMol = new T.MeshBasicMaterial({ color: 0x14202b, transparent: true, opacity: 0.22, side: T.DoubleSide, depthTest: false, depthWrite: false });
     mats.ringSel = new T.MeshBasicMaterial({ color: 0x14202b, transparent: true, opacity: 0.85, side: T.DoubleSide, depthTest: false, depthWrite: false });
@@ -4829,6 +5062,21 @@ var qrcode = function() {
 
   function cloudMatFor(occ) { return occ === 2 ? mats.double : (occ === 0 ? mats.empty : mats.single); }
 
+  /* Undurchsichtige Atomkugel in den üblichen Elementfarben (CPK/Jmol, leicht gedämpft):
+     H weiß, C dunkelgrau, N blau, O rot, F/Cl grün, S gelb, P orange … */
+  var CPK = {
+    H: 0xf4f4f2, He: 0xc9eef2, Li: 0xb98ae0, Be: 0xb5d64a, B: 0xeab0a8, C: 0x4a4f55, N: 0x3e63d8, O: 0xe0443c,
+    F: 0x8fd16a, Ne: 0xa9d8e8, Na: 0x9b62d6, Mg: 0x86c93f, Al: 0xb9a6a6, Si: 0xdcc09a, P: 0xf08a2c, S: 0xe8cc3a,
+    Cl: 0x3fbf55, Ar: 0x86c6d6
+  };
+  var ballSolidCache = {};
+  function ballSolidFor(sym) {
+    if (!ballSolidCache[sym]) {
+      ballSolidCache[sym] = new T.MeshPhongMaterial({ color: CPK[sym] !== undefined ? CPK[sym] : 0xc3ccd6, shininess: 10, specular: 0x1a1a1a });
+    }
+    return ballSolidCache[sym];
+  }
+
   function buildAtomView(atom) {
     var vis = world.visual(atom), p = vis.params, g = new T.Group();
     var q = world.chargeOf(atom);
@@ -4854,6 +5102,10 @@ var qrcode = function() {
       var cs = makeTextSprite(chargeLabel(q), q > 0 ? '#c2410c' : '#1d4ed8', 0.7);
       R.root.add(cs); v.charge = cs;
     }
+    var bl = new T.Mesh(sphereGeo, mats.ballGlass); bl.renderOrder = 4; bl.visible = false; g.add(bl); v.ball = bl;
+    /* eigener Schatten je Atom (eigenes Material, weil die Deckkraft von der Höhe abhängt); liegt nicht in der drehenden Gruppe */
+    var sh = new T.Mesh(shadowGeo, new T.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
+    sh.renderOrder = -1; sh.visible = false; R.root.add(sh); v.shadow = sh;
     var w = new T.Mesh(ringGeo, mats.ringMol); w.scale.setScalar(world.outerRadius(atom) + 0.05); w.visible = false; w.renderOrder = 15; g.add(w); v.wire = w;
     R.root.add(g);
     return v;
@@ -4872,6 +5124,7 @@ var qrcode = function() {
   function disposeAtomView(v) {
     R.root.remove(v.group);
     v.label.material.dispose();
+    if (v.shadow) { R.root.remove(v.shadow); v.shadow.material.dispose(); }
     if (v.charge) { R.root.remove(v.charge); v.charge.material.dispose(); }
     if (v.delta) { R.root.remove(v.delta); v.delta.material.dispose(); }
   }
@@ -4956,6 +5209,21 @@ var qrcode = function() {
         else { m.material = cloudMatFor(c.occ); m.scale.setScalar(p.rc); }
       });
       v.label.visible = ui.labels;
+      if (v.ball) {
+        v.ball.visible = ui.ball > 0;
+        v.ball.material = ui.ball === 2 ? ballSolidFor(a.sym) : mats.ballGlass;
+        v.ball.scale.setScalar(outer + 0.03);   /* minimal größer als die äußeren Wolken, damit nichts flimmert */
+      }
+      if (v.shadow) {
+        var hgt = a.pos.y - FLOOR_Y;   /* Höhe über dem Boden */
+        var showSh = ui.shadow && !ui.noShadow && hgt > 0.05;
+        v.shadow.visible = showSh;
+        if (showSh) {
+          v.shadow.position.set(a.pos.x, FLOOR_Y + 0.01, a.pos.z);
+          v.shadow.scale.setScalar(outer * (0.85 + 0.07 * hgt));                       /* höher: größer … */
+          v.shadow.material.opacity = Math.max(0.3, Math.min(1, 1.15 - 0.1 * hgt));   /* … und blasser */
+        }
+      }
       var dl = pol ? pol.delta[a.id] : 0, dt = dl ? (dl > 0 ? '\u03b4+' : '\u03b4\u2212') : '';
       if (dt !== v.deltaTxt) {
         if (v.delta) { R.root.remove(v.delta); v.delta.material.dispose(); v.delta = null; }
@@ -4986,8 +5254,11 @@ var qrcode = function() {
         tag.position.copy(a.pos).addScaledVector(camRight, rr).addScaledVector(camUp, rr);
       }
       v.wire.scale.setScalar(outer + 0.05);
-      v.wire.visible = ui.rings && !!sel[a.id];
-      if (ui.rings && sel[a.id]) {
+      /* Auswahlkreise nur ohne Atomkugel; bei sichtbarer Kugel stören sie (dann zeigt das blaue Symbol die Auswahl) */
+      v.wire.visible = ui.rings && ui.ball === 0 && !!sel[a.id];
+      var lt = labelTex(a.sym, a.id === ui.selAtom);
+      if (v.label.material.map !== lt) v.label.material.map = lt;
+      if (v.wire.visible) {
         v.wire.material = a.id === ui.selAtom ? mats.ringSel : mats.ringMol;
         v.wire.quaternion.copy(v.group.quaternion).invert().multiply(R.camera.quaternion);   /* Ring zeigt zur Kamera */
       }
@@ -5149,6 +5420,7 @@ var qrcode = function() {
   function releaseProton() {
     var b = ui.selBond ? world.bond(ui.selBond) : null;
     if (!b) return;
+    if (bondLocked()) { say(LOCK_MSG, '', 5000); return; }
     doAction(function () {
       var r = world.releaseProton(b);
       if (!r.ok) { say(r.reason); return false; }
@@ -5253,7 +5525,7 @@ var qrcode = function() {
     var w = cv.clientWidth || 800, h = cv.clientHeight || 600, SCALE = 3;
     var saveSel = [ui.selAtom, ui.selBond], gridVis = R.grid.visible;
     try {
-      ui.selAtom = null; ui.selBond = null; R.grid.visible = false;
+      ui.selAtom = null; ui.selBond = null; R.grid.visible = false; ui.noShadow = true;
       syncViews();
       R2.setPixelRatio(SCALE); R2.setSize(w, h, false);
       R2.render(R.scene, R.camera);
@@ -5294,7 +5566,7 @@ var qrcode = function() {
     } catch (e) {
       say('Das Bild konnte nicht erzeugt werden.');
     } finally {
-      ui.selAtom = saveSel[0]; ui.selBond = saveSel[1]; R.grid.visible = gridVis;
+      ui.selAtom = saveSel[0]; ui.selBond = saveSel[1]; R.grid.visible = gridVis; ui.noShadow = false;
       R2.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       resize();
       syncViews();
@@ -5334,6 +5606,7 @@ var qrcode = function() {
     if (ui.selBond) {
       var b = world.bond(ui.selBond);
       if (!b) return;
+      if (bondLocked()) { say(LOCK_MSG, '', 5000); return; }
       doAction(function () {
         var A = world.atom(b.a), B = world.atom(b.b);
         world.breakBond(b); ui.selBond = null;
@@ -5352,6 +5625,10 @@ var qrcode = function() {
       say('Tippe zuerst ein Atom oder eine Bindung an.');
     }
   }
+
+  /* Undurchsichtige Atomkugel = Betrachten: Wolken sind verdeckt, deshalb keine Bindungen bilden, ändern oder lösen */
+  var LOCK_MSG = 'Bei undurchsichtiger Atomkugel kannst du nur betrachten. Zum Binden die Atomkugel auf „durchsichtig“ oder „aus“ stellen (Taste U).';
+  function bondLocked() { return ui.ball === 2; }
 
   function tryBond(comp, ov) {
     var ch = world.chooseBond(ov);
@@ -5380,6 +5657,7 @@ var qrcode = function() {
   function connectSelected() {
     var a = ui.selAtom ? world.atom(ui.selAtom) : null;
     if (!a) { say('Tippe zuerst ein Atom an.'); return; }
+    if (bondLocked()) { say(LOCK_MSG, '', 5000); return; }
     var comp = world.component(a), ov = world.findOverlaps(comp, K.REACH);
     if (!ov.length) { say('Keine überlappenden blauen Wolken gefunden.'); return; }
     doAction(function () { return tryBond(comp, ov); });
@@ -5388,6 +5666,7 @@ var qrcode = function() {
   function changeOrder(delta) {
     var b = ui.selBond ? world.bond(ui.selBond) : null;
     if (!b) return;
+    if (bondLocked()) { say(LOCK_MSG, '', 5000); return; }
     doAction(function () {
       var r = delta > 0 ? world.increaseOrder(b) : world.decreaseOrder(b);
       if (!r.ok) { say(r.reason); return false; }
@@ -5539,8 +5818,12 @@ var qrcode = function() {
     if (b) {
       var A2 = world.atom(b.a), B2 = world.atom(b.b);
       $('bbLabel').textContent = A2.sym + '–' + B2.sym + ' · ' + (b.type === 'ionic' ? 'Ionenbindung' + (b.order > 1 ? ' (' + b.order + ' e⁻)' : '') : orderName(b.order));
-      $('bbMinus').disabled = b.order < 2;
-      $('bbPlus').disabled = !(world.freeSingles(A2).length && world.freeSingles(B2).length);
+      var lk = bondLocked();
+      $('bbMinus').disabled = lk || b.order < 2;
+      $('bbPlus').disabled = lk || !(world.freeSingles(A2).length && world.freeSingles(B2).length);
+      $('bbBreak').disabled = lk;
+      $('bbProton').disabled = lk;
+      bar.title = lk ? 'Bindungen ändern: Atomkugel auf „durchsichtig“ oder „aus“ stellen (Taste U)' : '';
       var cf = ui.advanced ? world.conformation(b) : null;
       $('bbRotL').hidden = $('bbRotR').hidden = $('bbView').hidden = !cf;
       var nw = $('bbNewman');
@@ -5563,12 +5846,42 @@ var qrcode = function() {
   function pick(e) {
     setRay(e);
     var best = null, bs = 1e9;
+    /* 0. Klick auf Elementsymbol/Kern wählt immer das Atom (auch ein gebundenes H, das ganz in der Bindungswolke steckt) */
+    var core = null, cs = 0.2;   /* etwa die Größe der Buchstaben */
+    world.atoms.forEach(function (a) {
+      var dd = ray.ray.distanceToPoint(a.pos);
+      if (dd < cs) { cs = dd; core = a; }
+    });
+    if (core) return { type: 'atom', atom: core };
+    /* 1. Was ist unter dem Zeiger vorne sichtbar? Bindungswolke → Bindung, Wolke/Kugel eines Atoms → Atom.
+          So trifft man Bindungen überall auf der roten Wolke (auch auf den Bindungselektronen). */
+    if (R.root) {
+      R.root.updateMatrixWorld();   /* Positionen aktuell, auch direkt nach einer Änderung vor dem nächsten Bild */
+      var objs = [];
+      world.atoms.forEach(function (a) {
+        var v = atomViews[a.id]; if (!v) return;
+        v.clouds.forEach(function (m) { if (m.visible) { m.userData.pick = { type: 'atom', atom: a }; objs.push(m); } });
+        if (v.ball && v.ball.visible && ui.ball === 2) { v.ball.userData.pick = { type: 'atom', atom: a }; objs.push(v.ball); }
+      });
+      if (!bondLocked()) {
+        world.bonds.forEach(function (b) {
+          var bv = bondViews[b.id]; if (!bv) return;
+          bv.lobes.forEach(function (m) { m.userData.pick = { type: 'bond', bond: b }; objs.push(m); });
+        });
+      }
+      var hits = ray.intersectObjects(objs, false);
+      if (hits.length) {
+        var hp = hits[0].object.userData.pick;
+        return hp.type === 'atom' ? { type: 'atom', atom: hp.atom } : { type: 'bond', bond: hp.bond };
+      }
+    }
+    /* 2. Nichts getroffen (knapp daneben): wie bisher nach Abstand */
     world.atoms.forEach(function (a) {
       var rr = world.outerRadius(a) * 1.04 + 0.1;
       var s = ray.ray.distanceToPoint(a.pos) / rr;
       if (s < 1 && s < bs) { bs = s; best = { type: 'atom', atom: a }; }
     });
-    world.bonds.forEach(function (b) {
+    if (!bondLocked()) world.bonds.forEach(function (b) {
       var A = world.atom(b.a), B = world.atom(b.b);
       var mid = A.pos.clone().add(B.pos).multiplyScalar(0.5);
       var s = (ray.ray.distanceToPoint(mid) / 0.34) * 0.9;
@@ -5578,6 +5891,7 @@ var qrcode = function() {
   }
 
   function setOverlap(ov) {
+    if (bondLocked()) ov = [];   /* kein „Loslassen zum Verbinden“ bei undurchsichtiger Atomkugel */
     var keys = {}, ch = ov.length ? world.chooseBond(ov) : null;
     if (ch) ch.pairs.forEach(function (p) { keys[ch.a.id + ':' + p.ia] = 1; keys[ch.b.id + ':' + p.ib] = 1; });
     var sig = Object.keys(keys).sort().join(',');
@@ -5743,11 +6057,15 @@ var qrcode = function() {
       clearOverlap();
       if (d.moved) {
         var bonded = false;
-        if (ov.length) {
-          if (ui.snap) bonded = tryBond(d.comp, ov);
-          else say('Wolken überlappen. Mit „Verbinden“ bestätigen.');
+        if (bondLocked()) {
+          if (ov.length) say(LOCK_MSG, '', 5000);   /* Atome bleiben nur nebeneinander liegen */
+        } else {
+          if (ov.length) {
+            if (ui.snap) bonded = tryBond(d.comp, ov);
+            else say('Wolken überlappen. Mit „Verbinden“ bestätigen.');
+          }
+          if (!bonded && !ov.length && !announceHBond(d.comp)) explainContact(d.comp);
         }
-        if (!bonded && !ov.length && !announceHBond(d.comp)) explainContact(d.comp);
         pushHistory(d.before);
         afterChange();
         return bonded;
@@ -5814,7 +6132,7 @@ var qrcode = function() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function () {
       try {
-        localStorage.setItem(STORE_KEY, JSON.stringify({ w: world.serialize(), ui: { snap: ui.snap, labels: ui.labels, polar: ui.polar, lewis: ui.lewis, electrons: ui.electrons, rings: ui.rings, infoMin: ui.infoMin, mode: ui.mode, advanced: ui.advanced, hbonds: ui.hbonds }, dockClosed: dockClosed }));
+        localStorage.setItem(STORE_KEY, JSON.stringify({ w: world.serialize(), ui: { snap: ui.snap, labels: ui.labels, polar: ui.polar, lewis: ui.lewis, electrons: ui.electrons, rings: ui.rings, infoMin: ui.infoMin, mode: ui.mode, advanced: ui.advanced, hbonds: ui.hbonds, shadow: ui.shadow, ball: ui.ball }, dockClosed: dockClosed }));
       } catch (e) { /* Speicher nicht verfügbar */ }
     }, 400);
   }
@@ -5827,7 +6145,7 @@ var qrcode = function() {
       var ok = st.w.atoms.every(function (a) { return K.ELEMENTS[a.s] && Array.isArray(a.p) && Array.isArray(a.q); });
       if (!ok) return false;
       world.load(st.w);
-      if (st.ui) { ui.snap = st.ui.snap !== false; ui.labels = st.ui.labels !== false; ui.polar = !!st.ui.polar; ui.lewis = !!st.ui.lewis; ui.electrons = !!st.ui.electrons; ui.rings = st.ui.rings !== false; ui.infoMin = !!st.ui.infoMin; ui.advanced = !!st.ui.advanced; ui.hbonds = !!st.ui.hbonds; if (/^(move|rotate|height)$/.test(st.ui.mode)) ui.mode = st.ui.mode; }
+      if (st.ui) { ui.snap = st.ui.snap !== false; ui.labels = st.ui.labels !== false; ui.polar = !!st.ui.polar; ui.lewis = !!st.ui.lewis; ui.electrons = !!st.ui.electrons; ui.rings = st.ui.rings !== false; ui.infoMin = !!st.ui.infoMin; ui.advanced = !!st.ui.advanced; ui.hbonds = !!st.ui.hbonds; ui.ball = (st.ui.ball === 1 || st.ui.ball === 2) ? st.ui.ball : 0; ui.shadow = st.ui.shadow !== false; if (/^(move|rotate|height)$/.test(st.ui.mode)) ui.mode = st.ui.mode; }
       dockClosed = !!st.dockClosed;
       return true;
     } catch (e) { return false; }
@@ -5859,6 +6177,8 @@ var qrcode = function() {
       case 'f': case 'F': onTool('lewis'); break;
       case 'e': case 'E': onTool('electrons'); break;
       case 'k': case 'K': onTool('rings'); break;
+      case 'u': case 'U': onTool('ball'); break;
+      case 'b': case 'B': onTool('shadow'); break;
       case 'a': case 'A': case 'ArrowLeft': orbit.theta -= 0.1; break;
       case 'd': case 'D': case 'ArrowRight': orbit.theta += 0.1; break;
       case 'w': case 'W': case 'ArrowUp': orbit.phi = clamp(orbit.phi - 0.07, 0.2, 1.38); break;

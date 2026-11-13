@@ -1,5 +1,21 @@
 # Änderungen am Kugelwolken-Baukasten
 
+## Version 0.11.0 (13.11.2026)
+
+Übernommen aus einer Testversion von Birgit Lachner.
+
+### Neu
+
+- **Atomkugel** (Anzeige → „Atomkugel“, Taste U): schaltet zwischen *aus*, *durchsichtig* und *undurchsichtig* um. Die durchsichtige Kugel zeigt, dass die Wolken innerhalb des Atoms liegen. Die undurchsichtige Kugel hat die üblichen Elementfarben (H weiß, C grau, N blau, O rot, Cl grün …) und dient nur zum Betrachten: Bindungen lassen sich dann nicht bilden, ändern oder lösen. Bei eingeschalteter Kugel sind die Auswahlkreise aus.
+- **Schatten** (Anzeige → „Schatten“, Taste B, standardmäßig an): Jedes Atom wirft einen weichen Schatten auf das Bodengitter. Je höher es schwebt, desto größer und blasser ist der Schatten. Im gespeicherten Bild (PNG) fehlt er.
+- **Gewähltes Atom:** Das Elementsymbol hat einen blauen statt eines schwarzen Rands.
+
+### Geändert
+
+- **Seitenleiste rechts** mit den Reitern „Anzeige“ und „Elemente“. Die Anzeige-Schalter stehen dort statt im Menü der Werkzeugleiste, das Periodensystem statt in der Leiste unter der Fläche. Es ist höchstens ein Bereich offen. Hilfe- und Aufgabenkarte stehen links.
+- **Ruhigere Oberfläche:** kompaktere Knöpfe, weniger Fettdruck, flachere Schatten, hellere Rahmen. Aktive Knöpfe sind getönt statt schwarz gefüllt. Tastenkürzel stehen in kleinen Kästchen. Im Periodensystem steht nur das Symbol, der Name erscheint als Tooltip.
+- **Auswahl per Klick:** Ein Klick auf Symbol oder Kern wählt immer das Atom, auch ein H, das ganz in der Bindungswolke steckt. Sonst zählt, was unter dem Zeiger vorne sichtbar ist. So trifft man eine Bindung überall auf ihrer Wolke.
+
 ## Version 0.10.1 (11.11.2026)
 
 ### Verbessert

@@ -21,15 +21,27 @@ if (out) fs.mkdirSync(out, { recursive: true });
   const ok = (c, m) => { console.log((c ? 'ok: ' : 'FEHLER: ') + m); if (!c) fails++; };
   const info = () => page.$eval('#info', e => e.textContent);
   const vis = sel => page.$eval(sel, e => !e.hidden && e.offsetParent !== null);
+  // Anzeige-Schalter liegen in der Seitenleiste rechts: Bereich „Anzeige“ öffnen, falls zu
+  const openView = async () => { if (await page.$eval('#sideBody', e => e.hidden)) await page.click('#sideToggle'); };
+  const openPse = async () => { if (await page.$eval('#dock', e => e.hidden)) await page.click('#tabPse'); };
+
+  // Seitenleiste: beim ersten Start ist „Elemente“ offen, höchstens ein Bereich offen
+  ok(await vis('#dock') && !(await vis('#sideBody')), 'Seitenleiste: anfangs Elemente offen, Anzeige zu');
+  await page.click('#sideToggle');
+  ok(await vis('#sideBody') && !(await vis('#dock')), 'Seitenleiste: Anzeige öffnet, Elemente klappt zu');
+  ok(!!(await page.$('#sideList #tb-labels')) && !(await page.$('#tbg-view')), 'Anzeige-Schalter in der Seitenleiste, kein Anzeige-Menü mehr');
+  await page.click('#sideToggle');
+  ok(!(await vis('#sideBody')) && !(await vis('#dock')), 'Seitenleiste: Reiter erneut klappt zu');
 
   // Ausgangslage: alles versteckt
   ok(!(await vis('#btnProton')), 'Proton-Knopf anfangs versteckt');
   ok(await page.$eval('#tb-hbonds', e => e.hidden), 'H-Brücken-Schalter anfangs versteckt');
 
   // Erweitert einschalten über das Menü
-  await page.click('#tbg-view');
+  await openView();
   await page.click('#tb-advanced');
-  ok(await vis('#btnProton'), 'Proton-Knopf nach „Erweitert“ sichtbar');
+  await openPse();
+  ok(await vis('#btnProton'), 'Proton-Knopf nach „Erweitert“ sichtbar (Bereich „Elemente“)');
   ok(!(await page.$eval('#tb-hbonds', e => e.hidden)), 'H-Brücken-Schalter sichtbar');
 
   // H2O + Proton -> H3O+
@@ -46,7 +58,7 @@ if (out) fs.mkdirSync(out, { recursive: true });
   let t = await info();
   ok(/H₃O⁺/.test(t) && /Oxonium/.test(t) && /Ladung \+1/.test(t), 'Infokarte zeigt H₃O⁺, Oxonium-Ion, Ladung');
   ok(/trigonal-pyramidal/.test(t) && /formale Ladung/.test(t), 'Infokarte: formale Ladung am O und Geometrie');
-  await page.click('#tbg-view'); await page.click('#tb-lewis');
+  await openView(); await page.click('#tb-lewis');
   await page.waitForTimeout(300);
   await shot(page, 'h3o.png');
 
@@ -106,6 +118,37 @@ if (out) fs.mkdirSync(out, { recursive: true });
   sel = await page.evaluate(() => ({ b: window.__kwm.ui.selBond, a: window.__kwm.ui.selAtom }));
   ok(!sel.b && sel.a, 'Antippen eines Atoms wählt das Atom');
   await page.click('#tb-move');
+  // Klick genau auf ein Elementsymbol wählt das Atom, auch wenn es in einer Bindungswolke steckt
+  const scr3 = await page.evaluate(() => {
+    const k = window.__kwm, w = k.world, cv = k.R.canvas.getBoundingClientRect();
+    w.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('hcl'); k.finishAnim(); k.ui.selAtom = null; k.ui.selBond = null; k.refresh();
+    const H = w.atoms.find(a => a.sym === 'H'), p = H.pos.clone().project(k.R.camera);
+    return { x: cv.left + (p.x + 1) / 2 * cv.width, y: cv.top + (1 - p.y) / 2 * cv.height, id: H.id };
+  });
+  await page.mouse.click(scr3.x, scr3.y);
+  sel = await page.evaluate(() => ({ b: window.__kwm.ui.selBond, a: window.__kwm.ui.selAtom }));
+  ok(sel.a === scr3.id && !sel.b, 'Klick auf das H-Symbol in HCl wählt das H-Atom');
+
+  // Atomkugel: aus → durchsichtig → undurchsichtig (Bindungen gesperrt) → aus
+  await openView();
+  const ballLbl = () => page.$eval('#tb-ball span', e => e.textContent);
+  ok((await ballLbl()) === 'Atomkugel: aus', 'Atomkugel anfangs aus');
+  await page.click('#tb-ball');
+  ok((await ballLbl()) === 'Atomkugel: durchsichtig', 'Atomkugel: durchsichtig');
+  await page.click('#tb-ball');
+  ok((await ballLbl()) === 'Atomkugel: undurchsichtig', 'Atomkugel: undurchsichtig');
+  await page.evaluate(() => { const k = window.__kwm, w = k.world; k.ui.selAtom = null; k.ui.selBond = w.bonds[0].id; k.refresh(); });
+  ok(await page.$eval('#bbBreak', e => e.disabled), 'undurchsichtige Atomkugel: „Lösen“ gesperrt');
+  const nb = await page.evaluate(() => { const k = window.__kwm; k.deleteSelection && k.deleteSelection(); return k.world.bonds.length; });
+  ok(nb === 1, 'undurchsichtige Atomkugel: Bindung bleibt bestehen');
+  await shot(page, 'atomkugel.png');
+  await page.click('#tb-ball');
+  ok((await ballLbl()) === 'Atomkugel: aus' && !(await page.$eval('#bbBreak', e => e.disabled)), 'Atomkugel wieder aus, „Lösen“ frei');
+  // Schatten: standardmäßig an, per Schalter aus und wieder an
+  ok(await page.$eval('#tb-shadow', e => e.getAttribute('aria-pressed') === 'true'), 'Schatten anfangs an');
+  await page.click('#tb-shadow');
+  ok(await page.evaluate(() => window.__kwm.ui.shadow === false), 'Schatten aus');
+  await page.click('#tb-shadow');
 
   // Ethen: Hinweis
   await page.evaluate(() => { const k = window.__kwm, w = k.world; w.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('c2h4'); const b = w.bonds.find(b => b.order === 2); k.ui.selAtom = null; k.ui.selBond = b.id; k.refresh(); });
@@ -113,7 +156,7 @@ if (out) fs.mkdirSync(out, { recursive: true });
   ok(/Mehrfachbindung/.test(await page.$eval('#status', e => e.textContent)), 'Ethen: Hinweis zur Doppelbindung');
 
   // Wasserstoffbrücken
-  await page.click('#tbg-view'); await page.click('#tb-hbonds');
+  await openView(); await page.click('#tb-hbonds');
   await page.evaluate(() => {
     const k = window.__kwm, w = k.world, T = window.THREE;
     w.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('h2o'); k.addExample('h2o');
@@ -131,7 +174,8 @@ if (out) fs.mkdirSync(out, { recursive: true });
   await shot(page, 'hbrücke.png');
 
   // Erweitert aus: alles wieder weg
-  await page.click('#tbg-view'); await page.click('#tb-advanced');
+  await openView(); await page.click('#tb-advanced');
+  await openPse();
   ok(!(await vis('#btnProton')) && await page.$eval('#tb-hbonds', e => e.hidden), 'Erweitert aus: Knöpfe versteckt');
   t = await info();
   ok(!/Wasserstoffbrücke/.test(t), 'Erweitert aus: keine H-Brücken-Anzeige');
@@ -143,6 +187,7 @@ if (out) fs.mkdirSync(out, { recursive: true });
   ok(!(await taskSetNames()).some(s => /Erweitert/.test(s)), 'Aufgabenset „Erweitert“ versteckt');
   // Eine erweiterte Aufgabe (etwa aus einem geteilten Link) schaltet „Erweitert“ selbst ein
   await page.evaluate(() => window.__kwm.startTask(window.KWM.Tasks.BUILTIN.find(t => t.adv)));
+  await openPse();
   ok(await page.evaluate(() => window.__kwm.ui.advanced) && await vis('#btnProton'), 'erweiterte Aufgabe schaltet „Erweitert“ ein');
   ok(await page.evaluate(() => window.__kwm.world.atoms.filter(a => window.__kwm.world.isProton(a)).length === 1), 'Startatome der Aufgabe enthalten ein Proton');
   ok(await advEx(), 'Beispiel-Kategorie mit „Erweitert“ sichtbar');
