@@ -1,5 +1,10 @@
 # Änderungen am Kugelwolken-Baukasten
 
+## Version 0.11.1 (13.11.2026)
+
+- **Neue Lizenz: CC BY-NC-SA 4.0** statt CC BY-NC-ND 4.0. Veränderte Fassungen dürfen jetzt weitergegeben werden, wenn sie nicht kommerziell sind und unter derselben Lizenz stehen.
+- Der Baukasten wird ab jetzt in einem eigenen, öffentlichen Repository entwickelt.
+
 ## Version 0.11.0 (13.11.2026)
 
 Übernommen aus einer Testversion von Birgit Lachner.
