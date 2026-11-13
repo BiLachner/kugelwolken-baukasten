@@ -134,10 +134,12 @@ if (out) fs.mkdirSync(out, { recursive: true });
   sel = await page.evaluate(() => ({ b: window.__kwm.ui.selBond, a: window.__kwm.ui.selAtom }));
   ok(sel.a === scr3.id && !sel.b, 'Klick auf das H-Symbol in HCl wählt das H-Atom');
 
-  // Atomkugel: aus → durchsichtig → undurchsichtig (Bindungen gesperrt) → aus
+  // Atomkugel: anfangs durchsichtig (Hülle der äußeren Stufe) → aus → durchsichtig → undurchsichtig (Bindungen gesperrt) → aus
   await openView();
   const ballLbl = () => page.$eval('#tb-ball button[aria-pressed="true"]', e => e.textContent);
-  ok((await ballLbl()) === 'aus', 'Atomkugel anfangs aus');
+  ok((await ballLbl()) === 'durchsichtig', 'Atomkugel anfangs durchsichtig');
+  await page.click('#tb-ball-0');
+  ok((await ballLbl()) === 'aus', 'Atomkugel: aus');
   await page.click('#tb-ball-1');
   ok((await ballLbl()) === 'durchsichtig' && await page.evaluate(() => window.__kwm.ui.ball === 1), 'Atomkugel: durchsichtig');
   await page.keyboard.press('u');
@@ -234,6 +236,23 @@ if (out) fs.mkdirSync(out, { recursive: true });
     }).map(a => a.sym);
   });
   ok(hidden.length === 0, 'neue Atome sichtbar, nicht hinter Karten oder Leisten' + (hidden.length ? ': ' + hidden.join() : ''));
+
+  // Ziehen an einer Bindungswolke bewegt im Modus „Bewegen“ das Molekül, die Ansicht bleibt
+  await page.click('#tb-move');
+  const grab = await page.evaluate(() => {
+    const k = window.__kwm, w = k.world;
+    w.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('c2h6'); k.ui.selAtom = null; k.ui.selBond = null; k.refresh();
+    const b = w.bonds.find(x => w.atom(x.a).sym === 'C' && w.atom(x.b).sym === 'C');
+    const m = w.atom(b.a).pos.clone().add(w.atom(b.b).pos).multiplyScalar(0.5).project(k.R.camera);
+    const st = document.getElementById('stage').getBoundingClientRect();
+    return { x: st.left + (m.x + 1) / 2 * st.width, y: st.top + (1 - m.y) / 2 * st.height, theta: k.orbit.theta, c: w.atoms[0].pos.toArray() };
+  });
+  await page.mouse.move(grab.x, grab.y); await page.mouse.down();
+  await page.mouse.move(grab.x + 40, grab.y + 10, { steps: 4 }); await page.mouse.move(grab.x + 80, grab.y + 20, { steps: 4 });
+  await page.mouse.up();
+  const after = await page.evaluate(() => ({ theta: window.__kwm.orbit.theta, c: window.__kwm.world.atoms[0].pos.toArray() }));
+  const movedBy = Math.hypot(after.c[0] - grab.c[0], after.c[2] - grab.c[2]);
+  ok(after.theta === grab.theta && movedBy > 0.3, 'Ziehen an der C–C-Bindung verschiebt Ethan, Ansicht bleibt (' + movedBy.toFixed(2) + ')');
 
   // Speichern über Neuladen (gleiche Seite, gleicher localStorage)
   await page.evaluate(() => { const k = window.__kwm; k.world.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('h2o'); k.addProton(); });

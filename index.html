@@ -820,6 +820,8 @@ body { gap: 8px; padding-block: 8px; }
         <li><b>Blau:</b> einfach besetzte Wolke. Sie ist eine freie Bindungsstelle.</li>
         <li><b>Rot:</b> doppelt besetzte Wolke, also ein freies Elektronenpaar. Rot ist auch die gemeinsame Wolke einer Bindung.</li>
         <li><b>Gelb:</b> innere Energiestufen, vereinfacht dargestellt.</li>
+        <li><b>Durchsichtige Kugel:</b> die äußere Energiestufe als Hülle. Sie umschließt die inneren Stufen. Unter „Darstellung“ → „Atomkugel“ lässt sie sich aus- oder undurchsichtig schalten (Taste U).</li>
+        <li><b>Doppel- und Dreifachbindung:</b> zwei bzw. drei gleichwertige, gebogene Wolken („Bananenbindungen“). Die Wolkenanordnung der Atome bleibt dabei tetraedrisch.</li>
       </ul>
     </section>
     <section>
@@ -3225,7 +3227,8 @@ var qrcode = function() {
   var POLAR_MIN = 0.4;   /* ab diesem Unterschied ist eine Atombindung polar */
 
   /* Darstellungsmaße je Periode: rc = Wolkenradius, d = Abstand Wolkenmitte zum Kern,
-     inner = grüne Kugel der inneren Energiestufe(n) in Edelgaskonfiguration */
+     inner = gelbe Kugel der inneren Energiestufe(n) in Edelgaskonfiguration
+     (Rostock nennt Grün als optionale Konvention; hier bewusst Gelb, siehe Entwicklungsplan) */
   var PARAMS = {
     1: { rc: 0.45, d: 0.45, inner: 0 },
     2: { rc: 0.42, d: 0.55, inner: 0.24 },
@@ -3884,7 +3887,38 @@ var qrcode = function() {
       else if (other === 1) { name = 'trigonal-pyramidal'; angle = '109,5°'; }
       else { name = 'gewinkelt'; angle = '109,5°'; }
     }
-    return { name: name, angle: angle, bonds: bonds.length, other: other };
+    /* Winkel so, wie das Modell sie baut: Richtung einer Bindung = Mittel ihrer Wolken. Bei Mehrfachbindungen
+       bleiben die Wolken tetraedrisch (Bananenbindung), Ethen hat dann 109,5° und 125,3° statt 120°. */
+    var angles = this.bondAngles(atom);
+    if (angles.length) {
+      var vals = angles.map(function (x) { return x.deg; });
+      var same = vals.every(function (v) { return Math.abs(v - vals[0]) < 0.6; });
+      angle = same ? degText(vals[0]) : angles.map(function (x) { return x.label + ' ' + degText(x.deg); }).join(', ');
+    }
+    return { name: name, angle: angle, bonds: bonds.length, other: other, angles: angles };
+  };
+  function degText(d) { return (Math.round(d * 10) / 10).toFixed(1).replace(/\.0$/, '').replace('.', ',') + '°'; }
+
+  /* Winkel zwischen den Bindungen eines Atoms, je Paar von Nachbarelementen einmal (z. B. H–C–H, H–C–C) */
+  P.bondAngles = function (atom) {
+    var self = this, dirs = [];
+    this.bondsOf(atom).forEach(function (b) {
+      if (b.type === 'ionic') return;
+      var mine = b.a === atom.id ? b.ca : b.cb, other = self.atom(b.a === atom.id ? b.b : b.a);
+      dirs.push({ sym: other.sym, dir: avgDir(self, atom, mine) });
+    });
+    var seen = {}, out = [];
+    for (var i = 0; i < dirs.length; i++) {
+      for (var j = i + 1; j < dirs.length; j++) {
+        var deg = Math.acos(Math.max(-1, Math.min(1, dirs[i].dir.dot(dirs[j].dir)))) * 180 / Math.PI;
+        var pair = [dirs[i].sym, dirs[j].sym].sort(), label = pair[0] + '–' + atom.sym + '–' + pair[1];
+        var key = label + '|' + Math.round(deg);
+        if (seen[key]) continue;
+        seen[key] = true;
+        out.push({ label: label, deg: deg });
+      }
+    }
+    return out.sort(function (x, y) { return x.deg - y.deg; });
   };
 
   /* Polarität der Atombindungen eines Moleküls: Teilladungen je Atom und Gesamtdipol.
@@ -4677,7 +4711,7 @@ var qrcode = function() {
 
   /* ---------- Zustand ---------- */
   var world = new K.World();
-  var ui = { mode: 'move', snap: true, labels: true, spin: false, selAtom: null, selBond: null, polar: false, lewis: false, electrons: false, rings: true, infoMin: false, advanced: false, hbonds: false, shadow: true, noShadow: false, ball: 0 /* Atomkugel: 0 aus, 1 durchsichtig, 2 undurchsichtig */ };
+  var ui = { mode: 'move', snap: true, labels: true, spin: false, selAtom: null, selBond: null, polar: false, lewis: false, electrons: false, rings: true, infoMin: false, advanced: false, hbonds: false, shadow: true, noShadow: false, ball: 1 /* Atomkugel: 0 aus, 1 durchsichtig (Standard: Hülle der äußeren Stufe, Rostock), 2 undurchsichtig */ };
   var hist = { undo: [], redo: [] };
   var anim = null;
   var overlapKeys = {}, overlapSig = '';
@@ -5058,9 +5092,10 @@ var qrcode = function() {
   }
 
   /* ---------- 3D-Szene ---------- */
-  var mats = {}, sphereGeo, ringGeo, labelCache = {}, shadowGeo, shadowTex;
+  var mats = {}, sphereGeo, bananaGeo, ringGeo, labelCache = {}, shadowGeo, shadowTex;
   var FLOOR_Y = -2.4;   /* Höhe des Bodengitters (siehe makeGrid) */
   var Z_AXIS = new T.Vector3(0, 0, 1);
+  var BANANA_BOW = 1.1;    /* Wölbung der Bananenbindung in der Mitte, relativ zur Dicke der Wolke */
 
   function cssVar(n, fallback) {
     var v = '';
@@ -5125,6 +5160,13 @@ var qrcode = function() {
     orbit.target = new T.Vector3(0, 0, 0);
 
     sphereGeo = new T.SphereGeometry(1, 28, 20);
+    /* Bananenbindung: Einheitskugel entlang z, in der Mitte nach +y gewölbt, an den Enden (bei den Kernen) auf der Achse */
+    bananaGeo = new T.SphereGeometry(1, 32, 24);
+    bananaGeo.rotateX(Math.PI / 2);   /* Pole auf die z-Achse, damit die Enden rund bleiben */
+    var bp = bananaGeo.attributes.position;
+    for (var bi = 0; bi < bp.count; bi++) bp.setY(bi, bp.getY(bi) + BANANA_BOW * (1 - bp.getZ(bi) * bp.getZ(bi)));
+    bp.needsUpdate = true;
+    bananaGeo.computeVertexNormals();
     ringGeo = new T.RingGeometry(0.965, 1, 72);
     function cloudMat(color, opacity) {
       return new T.MeshPhongMaterial({ color: color, transparent: true, opacity: opacity, shininess: 70, specular: 0x777777, depthWrite: false });
@@ -5336,7 +5378,9 @@ var qrcode = function() {
     var mid = A.pos.clone().add(B.pos).multiplyScalar(0.5);
     var q = new T.Quaternion().setFromUnitVectors(Z_AXIS, e);
     var ionic = bond.type === 'ionic';
-    var n = bond.order, off = n === 1 ? 0 : (n === 2 ? 0.17 : 0.21), rad = n === 1 ? 0.36 : (n === 2 ? 0.29 : 0.26);
+    /* Mehrfachbindung als Bananenbindungen (Tetraeder teilen Kante bzw. Fläche): gleichwertige Wolken, die an den
+       Kernen auf der Achse liegen und in der Mitte zur Seite ihrer Atomwolken gewölbt sind */
+    var n = bond.order, banana = !ionic && n > 1, off = 0, rad = n === 1 ? 0.36 : (n === 2 ? 0.29 : 0.26);
     if (ionic) { rad = 0.07; off = n === 1 ? 0 : 0.14; }
     var shift = 0;
     if (ui.polar && !ionic) {
@@ -5344,8 +5388,8 @@ var qrcode = function() {
       if (ea && eb && Math.abs(eb - ea) >= 0.4) shift = Math.max(-0.28, Math.min(0.28, (eb - ea) * 0.13));
     }
     for (var k = 0; k < n; k++) {
-      var m = bv.lobes[k], pos = mid.clone();
-      if (off) {
+      var m = bv.lobes[k], pos = mid.clone(), side = null;
+      if (off || banana) {
         var d = world.cloudDir(A, bond.ca[k]);
         d.addScaledVector(e, -d.dot(e));
         if (d.lengthSq() < 1e-4) {
@@ -5354,12 +5398,22 @@ var qrcode = function() {
         }
         d.normalize();
         pos.addScaledVector(d, off);
+        side = d;
       }
       if (shift) pos.addScaledVector(e, shift);
-      m.position.copy(pos); m.quaternion.copy(q);
-      var sel = ui.selBond === bond.id;
-      m.scale.set(sel ? rad * 1.22 : rad, sel ? rad * 1.22 : rad, ionic ? L / 2 : L / 2 + 0.28);
-      if (m.userData.dots) { m.userData.dots.visible = ui.electrons; m.userData.dots.position.copy(pos); }
+      var sel = ui.selBond === bond.id, r = sel ? rad * 1.22 : rad;
+      m.geometry = banana ? bananaGeo : sphereGeo;
+      m.position.copy(pos);
+      if (banana) {   /* lokal: z entlang der Bindung, +y zur Wölbung */
+        var bx = new T.Vector3().crossVectors(side, e);
+        m.quaternion.setFromRotationMatrix(new T.Matrix4().makeBasis(bx, side, e));
+      } else m.quaternion.copy(q);
+      m.scale.set(r, r, ionic ? L / 2 : L / 2 + 0.28);
+      if (m.userData.dots) {
+        m.userData.dots.visible = ui.electrons;
+        m.userData.dots.position.copy(pos);
+        if (banana) m.userData.dots.position.addScaledVector(side, r * BANANA_BOW);   /* Punkte in die Mitte der Wölbung */
+      }
       m.material = ui.selBond === bond.id ? mats.bondSel : (ionic ? mats.ionic : mats.bond);
     }
   }
@@ -6180,7 +6234,8 @@ var qrcode = function() {
     if (n > 2) return;
     var hit = pick(e);
     if (hit && hit.type === 'atom') startAtomDrag(e, hit.atom);
-    else if (hit && hit.type === 'bond') dragInfo = { kind: 'bondtap', bond: hit.bond, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false, id: e.pointerId };
+    else if (hit && hit.type === 'bond') dragInfo = { kind: 'bondtap', bond: hit.bond, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false, id: e.pointerId,
+      pointerType: e.pointerType, button: e.button, shiftKey: e.shiftKey };
     else dragInfo = { kind: 'orbit', x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false, id: e.pointerId };
     R.canvas.classList.add('grabbing');
     e.preventDefault();
@@ -6207,7 +6262,12 @@ var qrcode = function() {
     }
     if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 5) return;
     d.moved = true;
-    if (d.kind === 'bondtap') d.kind = 'orbit';
+    if (d.kind === 'bondtap') {
+      /* Ziehen an einer Bindungswolke bewegt das Molekül wie Ziehen an einem Atom (Bewegen, Drehen, Höhe).
+         Im KWM besteht ein Molekül großteils aus Bindungswolken, sonst würde man meist die Ansicht drehen. */
+      startAtomDrag({ clientX: d.x, clientY: d.y, pointerId: d.id, pointerType: d.pointerType, button: d.button, shiftKey: d.shiftKey }, world.atom(d.bond.a));
+      d = dragInfo; d.moved = true;
+    }
     if (d.kind === 'orbit') {
       orbit.theta -= (e.clientX - d.lx) * 0.008;
       orbit.phi = clamp(orbit.phi - (e.clientY - d.ly) * 0.006, 0.2, 1.38);
@@ -6354,7 +6414,7 @@ var qrcode = function() {
       var ok = st.w.atoms.every(function (a) { return K.ELEMENTS[a.s] && Array.isArray(a.p) && Array.isArray(a.q); });
       if (!ok) return false;
       world.load(st.w);
-      if (st.ui) { ui.snap = st.ui.snap !== false; ui.labels = st.ui.labels !== false; ui.polar = !!st.ui.polar; ui.lewis = !!st.ui.lewis; ui.electrons = !!st.ui.electrons; ui.rings = st.ui.rings !== false; ui.infoMin = !!st.ui.infoMin; ui.advanced = !!st.ui.advanced; ui.hbonds = !!st.ui.hbonds; ui.ball = (st.ui.ball === 1 || st.ui.ball === 2) ? st.ui.ball : 0; ui.shadow = st.ui.shadow !== false; if (/^(move|rotate|height)$/.test(st.ui.mode)) ui.mode = st.ui.mode; }
+      if (st.ui) { ui.snap = st.ui.snap !== false; ui.labels = st.ui.labels !== false; ui.polar = !!st.ui.polar; ui.lewis = !!st.ui.lewis; ui.electrons = !!st.ui.electrons; ui.rings = st.ui.rings !== false; ui.infoMin = !!st.ui.infoMin; ui.advanced = !!st.ui.advanced; ui.hbonds = !!st.ui.hbonds; ui.ball = (st.ui.ball === 0 || st.ui.ball === 1 || st.ui.ball === 2) ? st.ui.ball : 1; ui.shadow = st.ui.shadow !== false; if (/^(move|rotate|height)$/.test(st.ui.mode)) ui.mode = st.ui.mode; }
       return true;
     } catch (e) { return false; }
   }
