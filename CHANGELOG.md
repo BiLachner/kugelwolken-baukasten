@@ -2,6 +2,14 @@
 
 ## Unveröffentlicht
 
+### Modelltreue (Abgleich mit der Rostocker Beschreibung des KWM)
+
+- **Winkel in der Infokarte so, wie das Modell sie baut:** Die Wolken bleiben auch bei Mehrfachbindungen tetraedrisch. Bei Ethen steht deshalb jetzt „H–C–H 109,5°, C–C–H 125,3°“ statt „120°“. Wasser, Methan, CO₂ und Ethin sind unverändert.
+- **Gebogene Bananenbindungen:** Doppel- und Dreifachbindungen bestehen aus zwei bzw. drei gleichwertigen Wolken. Sie liegen an den Kernen auf der Achse und sind in der Mitte zur Seite ihrer Atomwolken gewölbt. Bisher waren es gerade, seitlich versetzte Ellipsoide.
+- **Atomkugel standardmäßig durchsichtig:** Die Hülle der äußeren Energiestufe ist von Anfang an zu sehen, wie in der Rostocker Darstellung („jede Energiestufe umschließt die tieferen“). Gespeicherte Einstellungen bleiben erhalten.
+- **Ziehen an einer Bindungswolke bewegt das Molekül** (bzw. dreht oder hebt es, je nach Modus). Bisher drehte sich dabei die Ansicht, obwohl „Bewegen“ gewählt war. Weil ein Molekül im KWM großteils aus Bindungswolken besteht, passierte das sehr oft. Antippen ohne Ziehen wählt die Bindung wie bisher, die Ansicht dreht man auf der freien Fläche.
+- Die Hilfe erklärt unter „Farben“ die durchsichtige Hülle und die Bananenbindungen. Die inneren Stufen bleiben bewusst gelb (Rostock nennt Grün als optionale Konvention).
+
 ### Seitenleiste und Bedienung
 
 - Der Reiter „Elemente“ der Seitenleiste heißt jetzt **„Atome“**, sein Bereich „Atome hinzufügen“. Der Tooltip lautet „Periodensystem: Atome hinzufügen“. So ist klar, dass man dort Atome holt. Die Hinweise bei leerer Fläche verweisen auf den neuen Reiter statt auf eine Leiste „unten“.

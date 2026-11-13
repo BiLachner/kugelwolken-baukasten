@@ -238,5 +238,16 @@ function attachProton(w, acceptor) {
   ok(w4.isIonShell(na) && !w4.centered(na), 'Na⁺: Neonschale mit vier Wolken unverändert');
 }
 
+// Winkel in der Infokarte: so, wie das Modell sie baut (tetraedrische Wolken, Bananenbindung)
+{
+  const angleOf = (id, sym) => { const w = new K.World(); build(w, id); return w.geometryOf(w.atoms.find(a => a.sym === sym)); };
+  const eth = angleOf('c2h4', 'C');
+  ok(eth.name === 'trigonal-planar' && eth.angle === 'H–C–H 109,5°, C–C–H 125,3°', 'Ethen: Winkel im Modell 109,5° und 125,3°: ' + eth.angle);
+  ok(angleOf('h2o', 'O').angle === '109,5°', 'Wasser: 109,5°');
+  ok(angleOf('ch4', 'C').angle === '109,5°', 'Methan: 109,5°');
+  ok(angleOf('co2', 'C').angle === '180°', 'CO₂: 180°');
+  ok(angleOf('c2h2', 'C').angle === '180°', 'Ethin: 180°');
+}
+
 console.log(fails ? fails + ' Fehler' : 'Alle Tests bestanden');
 process.exit(fails ? 1 : 0);
