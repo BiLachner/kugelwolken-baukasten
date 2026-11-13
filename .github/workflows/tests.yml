@@ -1,0 +1,30 @@
+name: Tests
+
+# Läuft bei jedem Pull Request und auf main.
+# Braucht keine Secrets.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Chemie (Engine)
+        run: node tests/engine.test.js
+      - name: Playwright mit Chromium installieren
+        run: |
+          npm install --no-save --no-package-lock playwright@1.47.2
+          npx playwright install --with-deps chromium
+      - name: Oberfläche (Browser)
+        run: node tests/ui.test.js index.html
