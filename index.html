@@ -234,12 +234,8 @@ button { font: inherit; color: inherit; }
 .dock-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 36px; }
 .dock-head h2 { margin: 0; font: 700 0.95rem/1.2 var(--font-display); }
 .dock-head .hint { color: var(--muted); font-size: 0.82rem; margin-left: 10px; font-weight: 400; }
-.dock-toggle { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; font-weight: 700; font-size: 0.85rem; }
 .adv-only[hidden] { display: none; }
-#btnProton { margin-left: auto; }
-#btnProton:disabled { opacity: 0.36; cursor: default; }
 #pse { display: grid; grid-template-columns: 18px repeat(8, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
-#dock.closed #pse { display: none; }
 #pse .gh, #pse .ph { color: var(--muted); font-size: 0.7rem; text-align: center; align-self: center; font-weight: 700; }
 .el {
   position: relative; min-height: 46px; padding: 2px; border-radius: 10px; border: 1px solid var(--line); cursor: pointer;
@@ -307,7 +303,7 @@ button { font: inherit; color: inherit; }
 }
 #taskcard[hidden] { display: none; }
 
-/* Seitenleiste „Anzeige“ am rechten Rand (Reiter + ausklappbarer Bereich) */
+/* Seitenleiste am rechten Rand (Reiter + ausklappbarer Bereich) */
 #toolbar { max-width: calc(100% - 82px); }
 #taskcard { right: 66px; width: min(320px, calc(100% - 82px)); }
 @media (min-width: 701px) { #bondbar { right: 66px; } }
@@ -477,7 +473,7 @@ body { gap: 8px; padding-block: 8px; }
 @media (min-width: 701px) { #bondbar { right: 60px; } }
 .sq { min-width: 42px; min-height: 42px; padding: 0 12px; border-radius: 10px; font-size: 1rem; }
 
-/* Seitenleiste rechts: feste Reiterleiste am Rand („Anzeige“, „Elemente“), Bereich klappt links daneben auf */
+/* Seitenleiste rechts: feste Reiterleiste am Rand („Darstellung“, „Atome“, „Erweitert“), Bereich klappt links daneben auf */
 #toolbar { max-width: calc(100% - 70px); }
 #side { top: 8px; right: 8px; bottom: 8px; flex-direction: row; }
 .side-tabs { order: 2; flex: none; display: flex; flex-direction: column; gap: 6px; }
@@ -499,13 +495,9 @@ body { gap: 8px; padding-block: 8px; }
 /* Periodensystem als Bereich der Seitenleiste */
 #side #dock { width: min(340px, calc(100vw - 110px)); padding: 4px 8px 10px; }
 #side #dock[hidden] { display: none; }
-#side #dockToggle { display: none; }               /* ein- und ausklappen übernimmt der Reiter */
-#side #dock.closed #pse { display: grid; }
 .dock-head { min-height: 36px; gap: 6px; padding: 0 0 4px 2px; border-bottom: 1px solid var(--line); }
 .dock-head h2 { font-size: 0.9rem; }
 .dock-head .hint { display: none; }
-.dock-toggle { min-height: 30px; padding: 0 10px; font-size: 0.78rem; font-weight: 400; }
-#btnProton { margin-left: auto; }
 #pse { grid-template-columns: 14px repeat(8, minmax(0, 1fr)); gap: 3px; margin-top: 6px; }
 #pse .gh, #pse .ph { font-size: 0.7rem; font-weight: 400; }
 .el { min-height: 48px; justify-content: flex-end; padding: 0 2px 6px; border-radius: 8px; border-color: transparent; }   /* Symbol unten, Ordnungszahl oben links */
@@ -520,6 +512,97 @@ body { gap: 8px; padding-block: 8px; }
 .sheet { border-radius: 14px; }
 .ex { min-height: 64px; border-radius: 10px; }
 .ex b { font-size: 1.15rem; }
+
+/* Bereich „Erweitert“: Hauptschalter oben, darunter Erklärung und Werkzeuge */
+#advTop { padding-bottom: 4px; }
+.side-note { margin: 0 10px 6px; padding-bottom: 8px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
+
+/* Ein/Aus-Einträge: Kippschalter rechts statt getöntem Hintergrund */
+.mi.tgl.on, .mi.tgl.on:hover:not(:disabled) { background: transparent; color: inherit; }
+.mi.tgl:hover:not(:disabled) { background: var(--surface-2); }
+.mi .sw {
+  order: 2; flex: none; position: relative; box-sizing: border-box; width: 30px; height: 18px;
+  border: 1.5px solid var(--muted); border-radius: 999px; transition: background-color 0.15s, border-color 0.15s;
+}
+.mi .sw::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%;
+  background: var(--muted); transition: transform 0.15s, background-color 0.15s;
+}
+.mi.on .sw { background: var(--ink); border-color: var(--ink); }
+.mi.on .sw::after { background: var(--surface); transform: translateX(12px); }
+
+/* Mehrfach-Umschalter (Atomkugel) */
+.mseg { display: flex; flex-direction: column; gap: 6px; padding: 6px 10px 8px; font-size: 0.88rem; }
+.mseg-head { display: flex; align-items: center; gap: 10px; min-height: 28px; }
+.mseg-head svg { flex: none; width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.mseg-head span { flex: 1; }
+.mseg-head kbd { font: 400 0.7rem/1.2 inherit; color: var(--muted); padding: 1px 5px; border: 1px solid var(--line); border-radius: 5px; }
+.mseg-opts { display: flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); }
+.mseg-opts button {
+  flex: 1 1 auto; min-height: 32px; padding: 0 6px; border: 0; border-radius: 7px; background: transparent;
+  color: var(--muted); font: inherit; font-size: 0.78rem; cursor: pointer;
+}
+.mseg-opts button:hover { color: var(--ink); }
+.mseg-opts button.on { background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(20, 32, 43, 0.08); }
+.mseg-opts button:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+
+/* Aufklappbare Karten: ein gemeinsamer Chevron, zeigt nach unten (offen) oder nach rechts (zu) */
+.chev { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.15s; }
+.fold { display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.fold[aria-expanded="false"] .chev, .mi[aria-expanded="false"] .chev, #taskcard:not([open]) .fold .chev { transform: rotate(-90deg); }
+.mi .chev { order: 2; flex: none; color: var(--muted); }
+.side-help { margin: 0 6px 6px 10px; padding: 8px 10px; border-radius: 8px; background: var(--surface-2); font-size: 0.8rem; line-height: 1.4; }
+.side-help ol { margin: 0 0 8px; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 4px; }
+.side-help .pill { min-height: 34px; font-size: 0.82rem; }
+#taskcard summary { list-style: none; }
+#taskcard summary::-webkit-details-marker { display: none; }
+#tcTitle { flex: 1; }
+#taskcard summary .fold { flex: none; width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .chev, .mi .sw, .mi .sw::after { transition: none; } }
+
+/* Werkzeugleiste: Bewegen/Drehen/Höhe als Gruppe (genau einer aktiv), wie der Atomkugel-Umschalter */
+.tb-modes { flex: none; display: flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-2); }
+.tb-modes .tb { min-height: 44px; }
+.tb-modes .tb.on, .tb-modes .tb.on:hover:not(:disabled) {
+  background: var(--surface); color: var(--ink); box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(20, 32, 43, 0.08);
+}
+/* dunkel: Fläche und Mulde sind fast gleich hell, deshalb getönt */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .tb-modes .tb.on, :root:not([data-theme="light"]) .mseg-opts button.on { background: var(--on-bg); color: var(--on-ink); }
+}
+:root[data-theme="dark"] .tb-modes .tb.on, :root[data-theme="dark"] .mseg-opts button.on { background: var(--on-bg); color: var(--on-ink); }
+/* Ein/Aus in der Werkzeugleiste (Einrasten): Kontrollpunkt statt getöntem Hintergrund */
+.tb.tgl { position: relative; }
+.tb.tgl.on, .tb.tgl.on:hover:not(:disabled) { background: transparent; color: var(--ink); }
+.tb.tgl.on:hover:not(:disabled) { background: var(--surface-2); }
+.tb.tgl::after {
+  content: ""; position: absolute; top: 5px; right: 9px; width: 8px; height: 8px; box-sizing: border-box;
+  border: 1.5px solid var(--muted); border-radius: 50%;
+}
+.tb.tgl.on::after { background: var(--ink); border-color: var(--ink); }
+/* Untermenüs: derselbe Chevron wie bei den Karten, dreht sich beim Öffnen */
+.tb .chev { width: 10px; height: 10px; margin-left: 2px; vertical-align: -1px; stroke-width: 2.6; color: inherit; }
+.tb[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+/* Hinweiszeile unten mittig; placeStatus() hebt sie über Bindungsleiste und Infokarte */
+#status { top: auto; bottom: 10px; max-width: min(600px, calc(100% - 28px)); }
+
+/* Seitenleiste endet über der Bindungsleiste (--side-bottom setzt layoutOverlays()).
+   Der Bereich wird über die volle Höhe gestreckt, damit max-height: 100 % greift und er scrollt. */
+#side { bottom: var(--side-bottom, 8px); }
+#side > .side-panels { align-self: stretch; pointer-events: none; }   /* leerer Teil bleibt bedienbar */
+#side > .side-panels > * { pointer-events: auto; }
+
+/* Handy: Bereich der Seitenleiste als Blatt von unten, Werkzeugleiste und Reiter bleiben frei */
+@media (max-width: 700px) {
+  #side { left: 8px; }
+  .side-tabs { margin-left: auto; }                   /* Reiter bleiben am rechten Rand */
+  .side-panels {
+    position: absolute; top: 35%; left: 0; right: 50px; bottom: 0; margin: 0;
+    flex-direction: column; justify-content: flex-end;
+  }
+  #side .side-body, #side #dock { width: auto; align-self: stretch; }
+}
 
 </style>
 <!-- Kugelwolken-Baukasten, Version 0.11.1. © 2026 hannes@sander-lg.de, CC BY-NC-SA 4.0
@@ -555,7 +638,7 @@ body { gap: 8px; padding-block: 8px; }
     <button id="coachOk" class="pill" type="button">Verstanden</button>
   </section>
   <details id="taskcard" hidden open>
-    <summary><span id="tcTitle"></span><span id="tcBadge" aria-hidden="true"></span></summary>
+    <summary><span id="tcTitle"></span><span id="tcBadge" aria-hidden="true"></span><span class="fold" aria-hidden="true"><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span></summary>
     <div class="tc-body">
       <p id="tcText"></p>
       <ol id="tcHints" class="tc-hints"></ol>
@@ -574,11 +657,10 @@ body { gap: 8px; padding-block: 8px; }
   <div id="nogl" hidden><p>Dieses Gerät oder dieser Browser stellt keine 3D-Grafik (WebGL) bereit. Bitte öffne die Seite in einem aktuellen Browser.</p></div>
 </main>
 
-<section id="dock" aria-label="Elemente">
+<section id="dock" aria-label="Atome hinzufügen (Periodensystem)">
   <div class="dock-head">
-    <h2>Elemente <span class="hint">Tippen, um ein Atom hinzuzufügen</span></h2>
-    <button id="btnProton" class="dock-toggle" type="button" hidden title="Proton hinzufügen: ein Wasserstoffatom ohne Elektron" aria-label="Proton H⁺ hinzufügen">H⁺ Proton</button>
-    <button id="dockToggle" class="dock-toggle" type="button" aria-expanded="true" aria-controls="pse">Ausblenden</button>
+    <h2>Atome hinzufügen <span class="hint">Element antippen</span></h2>
+    <button id="btnProton" class="mi" type="button" title="Proton hinzufügen: ein Wasserstoffatom ohne Elektron" aria-label="Proton H⁺ hinzufügen">H⁺ Proton</button>
   </div>
   <div id="pse"></div>
 </section>
@@ -760,14 +842,14 @@ body { gap: 8px; padding-block: 8px; }
     </section>
     <section>
       <h3>Lewis-Formel und Bild</h3>
-      <p>Unter „Anzeige“ (Taste F) zeigt die Infokarte zum gewählten Molekül die Lewis-Formel mit Bindungsstrichen und Elektronenpaaren, bei Ionenverbindungen mit Klammern und Ladung. Unter „Ansicht“ speichert „Bild speichern (PNG)“ die Teilchen auf weißem Grund, für Arbeitsblätter und Folien.</p>
+      <p>Mit „Lewis-Formel“ im Bereich „Darstellung“ (Taste F) zeigt die Infokarte zum gewählten Molekül die Lewis-Formel mit Bindungsstrichen und Elektronenpaaren, bei Ionenverbindungen mit Klammern und Ladung. Unter „Ansicht“ speichert „Bild speichern (PNG)“ die Teilchen auf weißem Grund, für Arbeitsblätter und Folien.</p>
     </section>
     <section>
       <h3>Erweiterte Funktionen</h3>
-      <p>Unter „Anzeige“ schaltet „Erweitert“ drei zusätzliche Werkzeuge frei. Sie sind für den Einstieg nicht nötig.</p>
+      <p>Im Bereich „Erweitert“ der Seitenleiste schaltet „Erweiterte Funktionen“ drei zusätzliche Werkzeuge frei. Sie sind für den Einstieg nicht nötig.</p>
       <ul>
-        <li><b>Protonen:</b> „H⁺ Proton“ neben dem Periodensystem legt ein Wasserstoffatom ohne Elektron ab. Es bindet an ein freies Elektronenpaar (rote Wolke), so entstehen H₃O⁺ oder NH₄⁺. Bei einer gewählten Bindung zu einem H-Atom gibt „H⁺ abspalten“ ein Proton ab, das Elektronenpaar bleibt beim Partner (HCl wird zu Cl⁻, H₂O zu OH⁻).</li>
-        <li><b>Wasserstoffbrücken:</b> Mit „H-Brücken“ unter „Anzeige“ erscheinen Punktlinien, wenn ein H-Atom an N, O oder F auf ein freies Elektronenpaar eines N-, O- oder F-Atoms in einem anderen Molekül zeigt.</li>
+        <li><b>Protonen:</b> „H⁺ Proton hinzufügen“ im Bereich „Erweitert“ legt ein Wasserstoffatom ohne Elektron ab. Es bindet an ein freies Elektronenpaar (rote Wolke), so entstehen H₃O⁺ oder NH₄⁺. Bei einer gewählten Bindung zu einem H-Atom gibt „H⁺ abspalten“ ein Proton ab, das Elektronenpaar bleibt beim Partner (HCl wird zu Cl⁻, H₂O zu OH⁻).</li>
+        <li><b>Wasserstoffbrücken:</b> Mit „H-Brücken“ im Bereich „Erweitert“ erscheinen Punktlinien, wenn ein H-Atom an N, O oder F auf ein freies Elektronenpaar eines N-, O- oder F-Atoms in einem anderen Molekül zeigt.</li>
         <li><b>Konformation:</b> Bei einer gewählten Einfachbindung drehen „↺“ und „↻“ eine Molekülhälfte um die Bindung, etwa beim Ethan von gestaffelt nach ekliptisch. Die Bindungsleiste zeigt dazu die Newman-Projektion, „Blick entlang“ dreht das Molekül in dieselbe Blickrichtung. Die Bindung bleibt gewählt, während du das Molekül verschiebst oder drehst. Um Doppelbindungen lässt sich nicht drehen.</li>
       </ul>
     </section>
@@ -4298,7 +4380,7 @@ var qrcode = function() {
   function check(world, task) {
     var g = task.goal || {};
     var comps = components(world);
-    if (!world.atoms.length) return { ok: false, state: 'empty', messages: ['Die Fläche ist noch leer. Wähle unten Elemente aus.'] };
+    if (!world.atoms.length) return { ok: false, state: 'empty', messages: ['Die Fläche ist noch leer. Hole dir Atome aus dem Periodensystem (Reiter „Atome“).'] };
     var failure = null, i;
 
     if (g.c) {
@@ -4567,7 +4649,7 @@ var qrcode = function() {
       'Nach der Bindung sind alle drei O–H-Bindungen gleich, das frühere Proton ist nicht mehr zu erkennen. Die Ladung +1 gehört dem ganzen Ion. Zählt man die Elektronen (freie Paare ganz, Bindungspaare halb), hat der Sauerstoff eines weniger als im Wassermolekül: Formal steht die Ladung deshalb am O, nicht am H.',
       { adv: true, set: S3 }),
     D(10, 'Warum siedet Wasser so hoch?', 'Aussage: „Wasser (H₂O) und Schwefelwasserstoff (H₂S) sind fast gleich gebaut, also sieden sie auch ähnlich.“ Tatsächlich siedet Wasser bei 100 °C, H₂S schon bei −60 °C. Woran liegt das?', 'h2o',
-      ['Schalte unter „Anzeige“ die „H-Brücken“ ein.', 'Hole ein zweites Wassermolekül aus den Beispielen und bringe eines seiner H-Atome an eine rote Wolke des ersten.', 'Versuche dasselbe mit zwei H₂S-Molekülen.'],
+      ['Schalte im Bereich „Erweitert“ die „H-Brücken“ ein.', 'Hole ein zweites Wassermolekül aus den Beispielen und bringe eines seiner H-Atome an eine rote Wolke des ersten.', 'Versuche dasselbe mit zwei H₂S-Molekülen.'],
       'Zwischen Wassermolekülen bilden sich Wasserstoffbrücken: Ein H-Atom am stark anziehenden Sauerstoff zeigt auf ein freies Elektronenpaar des Nachbarmoleküls. Schwefel zieht die Elektronen viel schwächer an, H₂S bildet deshalb kaum Wasserstoffbrücken. Beim Sieden müssen die Brücken gelöst werden, darum siedet Wasser viel höher.',
       { adv: true, set: S3 }),
     D(11, 'Dreht sich alles frei?', 'Aussage: „Um jede Bindung zwischen zwei Kohlenstoffatomen kann sich ein Molekül frei drehen.“ Vergleiche Ethan und Ethen.', 'c2h6',
@@ -4605,7 +4687,7 @@ var qrcode = function() {
   var R = {};                      /* Renderer, Szene, Kamera */
   var orbit = { theta: 0.55, phi: 1.1, r: 10, target: null };
   var STORE_KEY = 'kwm.v1';
-  var dockClosed = false;
+  var protonBlocked = false;       /* Aufgabe beschränkt das Periodensystem ohne H */
 
   var ORDER_NAMES = { 1: 'Einfachbindung', 2: 'Doppelbindung', 3: 'Dreifachbindung' };
   function chargeShort(q) { return q ? '(' + chargeLabel(q) + ')' : ''; }
@@ -4636,41 +4718,44 @@ var qrcode = function() {
     dots: '<circle cx="8" cy="12" r="2.4" fill="currentColor"/><circle cx="16" cy="12" r="2.4" fill="currentColor"/><circle cx="12" cy="12" r="9"/>',
     polar: '<path d="M4 12h16M16 8l4 4-4 4"/><path d="M6 7v4M4 9h4"/>',
     hbond: '<circle cx="4.5" cy="12" r="2.2"/><circle cx="19.5" cy="12" r="2.2"/><circle cx="9.5" cy="12" r="0.9" fill="currentColor"/><circle cx="12" cy="12" r="0.9" fill="currentColor"/><circle cx="14.5" cy="12" r="0.9" fill="currentColor"/>',
-    advanced: '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>'
+    advanced: '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+    eye: '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+    spin: '<path d="M20 11a8 8 0 0 0-14.3-4.6"/><path d="M5 3v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.6"/><path d="M19 21v-4h-4"/>',
+    proton: '<circle cx="11" cy="13" r="6.5"/><path d="M11 10v6M8 13h6"/><path d="M18 4v4M16 6h4"/>'
   };
+  var CHEVRON = '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 
   var TOOLS = [
-    { id: 'move', label: 'Bewegen', icon: 'move', tip: 'Atome und Moleküle auf der Fläche verschieben', key: 'M' },
-    { id: 'rotate', label: 'Drehen', icon: 'rotate', tip: 'Ein Molekül drehen', key: 'R' },
-    { id: 'height', label: 'Höhe', icon: 'height', tip: 'Ein Atom oder Molekül nach oben und unten verschieben', key: 'H' },
+    { id: 'move', mode: true, label: 'Bewegen', icon: 'move', tip: 'Atome und Moleküle auf der Fläche verschieben', key: 'M' },
+    { id: 'rotate', mode: true, label: 'Drehen', icon: 'rotate', tip: 'Ein Molekül drehen', key: 'R' },
+    { id: 'height', mode: true, label: 'Höhe', icon: 'height', tip: 'Ein Atom oder Molekül nach oben und unten verschieben', key: 'H' },
     { sep: true },
     { id: 'undo', label: 'Zurück', icon: 'undo', tip: 'Letzten Schritt rückgängig machen', key: 'Strg+Z' },
     { id: 'redo', label: 'Wieder', icon: 'redo', tip: 'Rückgängig gemachten Schritt wiederholen', key: 'Strg+Y' },
     { sep: true },
-    { id: 'snap', label: 'Einrasten', icon: 'magnet', tip: 'Bindung beim Loslassen automatisch herstellen' },
+    { id: 'snap', tgl: true, label: 'Einrasten', icon: 'magnet', tip: 'Bindung beim Loslassen automatisch herstellen' },
     { id: 'connect', label: 'Verbinden', icon: 'link', tip: 'Überlappende Wolken des gewählten Moleküls verbinden' },
     { sep: true },
     { id: 'del', group: 'delete', label: 'Atom löschen', icon: 'trash', tip: 'Ausgewähltes Atom löschen (bei gewählter Bindung: Bindung lösen)', key: 'Entf' },
     { id: 'delmol', group: 'delete', label: 'Molekül löschen', icon: 'trashmol', tip: 'Gesamtes Molekül des gewählten Atoms löschen', key: 'Umschalt+Entf' },
     { id: 'clear', group: 'delete', label: 'Alles löschen', icon: 'trashall', tip: 'Alle Teilchen von der Fläche löschen' },
-    { id: 'labels', group: 'view', label: 'Symbole', icon: 'tag', tip: 'Elementsymbole ein- und ausblenden', key: 'L' },
-    { id: 'polar', group: 'view', label: 'Polarität', icon: 'polar', tip: 'Ladungsverschiebung (δ+ / δ−) und Dipol anzeigen', key: 'P' },
-    { id: 'lewis', group: 'view', label: 'Lewis-Formel', icon: 'lewis', tip: 'Lewis-Formel des gewählten Moleküls in der Infokarte zeigen', key: 'F' },
-    { id: 'electrons', group: 'view', label: 'Elektronenzahl', icon: 'dots', tip: 'Elektronen als Punkte in den Wolken zeigen (ein oder zwei), unabhängig von der Farbe', key: 'E' },
-    { id: 'shadow', group: 'view', label: 'Schatten', icon: 'shadow', tip: 'Schatten der Atome auf dem Boden: zeigt, wie hoch ein Atom schwebt', key: 'B' },
-    { id: 'ball', group: 'view', label: 'Atomkugel: aus', icon: 'ball', tip: 'Kugel um jedes Atom: aus, durchsichtig, undurchsichtig (zeigt: Atome sind Kugeln, die sich in der Bindung berühren)', key: 'U' },
-    { id: 'rings', group: 'view', label: 'Auswahlkreise', icon: 'ring', tip: 'Kreise um gewählte Atome ein- und ausblenden (bei eingeschalteter Atomkugel ausgeblendet)', key: 'K' },
-    { id: 'spin', group: 'view', label: 'Kreisen', icon: 'orbit', tip: 'Ansicht automatisch drehen' },
-    { id: 'hbonds', group: 'view', label: 'H-Brücken', icon: 'hbond', tip: 'Wasserstoffbrücken zwischen Molekülen als Punktlinie zeigen' },
-    { id: 'advanced', group: 'view', label: 'Erweitert', icon: 'advanced', tip: 'Erweiterte Funktionen: Protonen, Wasserstoffbrücken, Drehen um Einfachbindungen' },
+    { id: 'labels', group: 'view', tgl: true, label: 'Symbole', icon: 'tag', tip: 'Elementsymbole ein- und ausblenden', key: 'L' },
+    { id: 'polar', group: 'view', tgl: true, label: 'Polarität', icon: 'polar', tip: 'Ladungsverschiebung (δ+ / δ−) und Dipol anzeigen', key: 'P' },
+    { id: 'lewis', group: 'view', tgl: true, label: 'Lewis-Formel', icon: 'lewis', tip: 'Lewis-Formel des gewählten Moleküls in der Infokarte zeigen', key: 'F' },
+    { id: 'electrons', group: 'view', tgl: true, label: 'Elektronenzahl', icon: 'dots', tip: 'Elektronen als Punkte in den Wolken zeigen (ein oder zwei), unabhängig von der Farbe', key: 'E' },
+    { id: 'shadow', group: 'view', tgl: true, label: 'Schatten', icon: 'shadow', tip: 'Schatten der Atome auf dem Boden: zeigt, wie hoch ein Atom schwebt', key: 'B' },
+    { id: 'rings', group: 'view', tgl: true, label: 'Auswahlkreise', icon: 'ring', tip: 'Kreise um gewählte Atome ein- und ausblenden (bei eingeschalteter Atomkugel ausgeblendet)', key: 'K' },
+    { id: 'ball', group: 'view', seg: ['aus', 'durchsichtig', 'undurchsichtig'], label: 'Atomkugel', icon: 'ball', tip: 'Kugel um jedes Atom: aus, durchsichtig, undurchsichtig (zeigt: Atome sind Kugeln, die sich in der Bindung berühren)', key: 'U' },
+    { id: 'advanced', group: 'adv', tgl: true, label: 'Erweiterte Funktionen', icon: 'advanced', tip: 'Erweiterte Funktionen: Protonen, Wasserstoffbrücken, Drehen um Einfachbindungen, Beispiele und Aufgaben zu geladenen Teilchen' },
+    { id: 'hbonds', group: 'adv', tgl: true, label: 'H-Brücken', icon: 'hbond', tip: 'Wasserstoffbrücken zwischen Molekülen als Punktlinie zeigen' },
     { id: 'reset', group: 'nav', label: 'Ansicht zurücksetzen', icon: 'home', tip: 'Kamera zurücksetzen' },
+    { id: 'spin', group: 'nav', tgl: true, label: 'Ansicht kreisen lassen', icon: 'spin', tip: 'Ansicht automatisch um die Teilchen kreisen lassen' },
     { id: 'png', group: 'nav', label: 'Bild speichern (PNG)', icon: 'image', tip: 'Aktuelle Ansicht als Bild speichern, weißer Hintergrund, auf die Teilchen zugeschnitten' },
     { id: 'full', group: 'nav', label: 'Vollbild', icon: 'expand', tip: 'Vollbild ein- und ausschalten' }
   ];
   var GROUPS = {
     delete: { label: 'Löschen', icon: 'trash', tip: 'Löschen: Atom, Molekül oder alles' },
-    view: { label: 'Anzeige', icon: 'tag', tip: 'Anzeige: Symbole, Polarität, Kreise, Lewis, erweiterte Funktionen' },
-    nav: { label: 'Ansicht', icon: 'home', tip: 'Ansicht: Zurücksetzen, Bild speichern, Vollbild' }
+    nav: { label: 'Ansicht', icon: 'home', tip: 'Ansicht: Zurücksetzen, Kreisen lassen, Bild speichern, Vollbild' }
   };
   var tbEls = {}, menuEls = {}, groupBtns = {}, openMenu = null;
 
@@ -4695,11 +4780,12 @@ var qrcode = function() {
     var first = m.querySelector('button:not(:disabled)'); if (first) first.focus();
   }
 
-  /* Seitenleiste rechts: Reiter „Anzeige“ und „Elemente“; es ist höchstens ein Bereich offen */
+  /* Seitenleiste rechts: Reiter „Darstellung“, „Atome“ und „Erweitert“; es ist höchstens ein Bereich offen */
   var SIDE_KEY = 'kwm.sidepanel';
   var SIDE_PANELS = [
-    { key: 'view', tab: 'sideToggle', panel: 'sideBody', label: 'Anzeige' },
-    { key: 'pse', tab: 'tabPse', panel: 'dock', label: 'Elemente' }
+    { key: 'view', tab: 'sideToggle', panel: 'sideBody', label: 'Darstellung' },
+    { key: 'pse', tab: 'tabPse', panel: 'dock', label: 'Atome', tip: 'Periodensystem: Atome hinzufügen' },
+    { key: 'adv', tab: 'tabAdv', panel: 'advBody', label: 'Erweitert', tip: 'Erweitert: Protonen, Wasserstoffbrücken' }
   ];
   var sideOpen = null;
   function setSide(which) {
@@ -4709,7 +4795,7 @@ var qrcode = function() {
       var on = sideOpen === s.key, tb = $(s.tab);
       tb.classList.toggle('on', on);
       tb.setAttribute('aria-expanded', on ? 'true' : 'false');
-      tb.title = s.label + (on ? ' einklappen' : ' ausklappen');
+      tb.title = s.tip ? s.tip + (on ? ' (einklappen)' : '') : s.label + (on ? ' einklappen' : ' ausklappen');
       $(s.panel).hidden = !on;
     });
     try { localStorage.setItem(SIDE_KEY, sideOpen || 'none'); } catch (e) { /* Speicher nicht verfügbar */ }
@@ -4722,11 +4808,18 @@ var qrcode = function() {
         '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[icon] + '</svg><span>' + text + '</span></button>';
     }
     side.innerHTML =
-      '<div class="side-tabs">' + tab('sideToggle', 'sideBody', 'tag', 'Anzeige') + tab('tabPse', 'dock', 'pse', 'Elemente') + '</div>' +
+      '<div class="side-tabs">' + tab('sideToggle', 'sideBody', 'eye', 'Darstellung') + tab('tabPse', 'dock', 'pse', 'Atome') +
+        tab('tabAdv', 'advBody', 'advanced', 'Erweitert') + '</div>' +
       '<div class="side-panels" id="sidePanels">' +
         '<div id="sideBody" class="side-body" hidden>' +
-          '<div class="side-head"><h2>Anzeige</h2><button type="button" class="x" id="sideClose" aria-label="Anzeige einklappen">›</button></div>' +
-          '<div id="sideList" class="side-list" role="group" aria-label="Anzeige"></div>' +
+          '<div class="side-head"><h2>Darstellung</h2><button type="button" class="x" id="sideClose" aria-label="Darstellung einklappen">›</button></div>' +
+          '<div id="sideList" class="side-list" role="group" aria-label="Darstellung"></div>' +
+        '</div>' +
+        '<div id="advBody" class="side-body" hidden>' +
+          '<div class="side-head"><h2>Erweitert</h2><button type="button" class="x" id="advClose" aria-label="Erweitert einklappen">›</button></div>' +
+          '<div id="advTop" class="side-list" role="group" aria-label="Erweiterte Funktionen"></div>' +
+          '<p class="side-note">Für Protonen, Wasserstoffbrücken und das Drehen um Einfachbindungen. Dazu kommen Beispiele und Aufgaben zu geladenen Teilchen.</p>' +
+          '<div id="advList" class="side-list" role="group" aria-label="Erweiterte Werkzeuge"></div>' +
         '</div>' +
       '</div>';
     stage.appendChild(side);
@@ -4734,16 +4827,69 @@ var qrcode = function() {
     var dock = $('dock');
     $('sidePanels').appendChild(dock);
     var dc = document.createElement('button');
-    dc.type = 'button'; dc.className = 'x'; dc.id = 'dockClose'; dc.setAttribute('aria-label', 'Elemente einklappen'); dc.textContent = '›';
+    dc.type = 'button'; dc.className = 'x'; dc.id = 'dockClose'; dc.setAttribute('aria-label', 'Atome einklappen'); dc.textContent = '›';
     dock.querySelector('.dock-head').appendChild(dc);
     SIDE_PANELS.forEach(function (s) {
       $(s.tab).addEventListener('click', function () { setSide(sideOpen === s.key ? null : s.key); });
     });
     $('sideClose').addEventListener('click', function () { setSide(null); $('sideToggle').focus(); });
+    $('advClose').addEventListener('click', function () { setSide(null); $('tabAdv').focus(); });
     dc.addEventListener('click', function () { setSide(null); $('tabPse').focus(); });
-    var start = 'pse';   /* beim ersten Start: Elemente offen, damit man gleich Atome holen kann */
+    var start = 'pse';   /* beim ersten Start: Atome offen, damit man gleich Atome holen kann */
     try { var st = localStorage.getItem(SIDE_KEY); if (st) start = st === 'none' ? null : st; } catch (e) { /* Speicher nicht verfügbar */ }
-    setSide(start === 'view' || start === 'pse' ? start : null);
+    setSide(SIDE_PANELS.some(function (s) { return s.key === start; }) ? start : null);
+  }
+
+  /* Mehrfach-Umschalter (z. B. Atomkugel: aus | durchsichtig | undurchsichtig) als Zeile mit Knopfgruppe */
+  function buildSeg(t) {
+    var w = document.createElement('div');
+    w.className = 'mseg'; w.id = 'tb-' + t.id; w.setAttribute('role', 'group'); w.setAttribute('aria-label', t.label);
+    w.title = t.tip + (t.key ? ' (' + t.key + ')' : '');
+    w.innerHTML = '<div class="mseg-head"><svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[t.icon] + '</svg><span>' + t.label + '</span>' +
+      (t.key ? '<kbd>' + t.key + '</kbd>' : '') + '</div><div class="mseg-opts"></div>';
+    t.seg.forEach(function (txt, i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.id = 'tb-' + t.id + '-' + i; b.textContent = txt;
+      b.setAttribute('aria-label', t.label + ' ' + txt);
+      b.addEventListener('click', function () { onTool(t.id, i); });
+      w.lastChild.appendChild(b);
+    });
+    tbEls[t.id] = w;
+    return w;
+  }
+
+  /* „Drehen um Einfachbindungen“: Eintrag klappt eine kurze Anleitung auf, mit Ethan zum Ausprobieren */
+  function buildRotHelp(host) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'mi'; b.id = 'advRotHelp';
+    b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', 'advRotText');
+    b.title = 'Kurze Anleitung: Drehen um Einfachbindungen und Newman-Projektion';
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS.rotate + '</svg><span>Drehen um Einfachbindungen</span>' + CHEVRON;
+    var d = document.createElement('div');
+    d.id = 'advRotText'; d.className = 'side-help'; d.hidden = true;
+    d.innerHTML =
+      '<ol>' +
+        '<li>Tippe eine Einfachbindung an, deren beide Atome noch weitere Nachbarn haben, etwa C–C im Ethan.</li>' +
+        '<li>Die Bindungsleiste zeigt die Newman-Projektion. „↺“ und „↻“ drehen eine Molekülhälfte um die Bindung, „Blick entlang“ dreht die Ansicht in Richtung der Bindung.</li>' +
+        '<li>Um Doppel- und Dreifachbindungen lässt sich nicht drehen.</li>' +
+      '</ol>' +
+      '<button type="button" class="pill" id="advRotTry">Mit Ethan ausprobieren</button>';
+    host.appendChild(b); host.appendChild(d);
+    b.addEventListener('click', function () {
+      d.hidden = !d.hidden; b.setAttribute('aria-expanded', d.hidden ? 'false' : 'true');
+    });
+    $('advRotTry').addEventListener('click', function () {
+      if (!ui.advanced) ui.advanced = true;   /* ohne erweiterte Funktionen gäbe es keine Newman-Projektion */
+      addExample('c2h6');
+      var c = ui.selAtom && world.atom(ui.selAtom);
+      var cc = c && world.bonds.filter(function (x) {
+        var A = world.atom(x.a), B = world.atom(x.b);
+        return (x.a === c.id || x.b === c.id) && A.sym === 'C' && B.sym === 'C';
+      })[0];
+      if (cc) { ui.selAtom = null; ui.selBond = cc.id; }
+      refresh(); saveSoon();
+      say('C–C-Bindung im Ethan gewählt. Drehe mit „↺“ und „↻“ in der Bindungsleiste.', 'ok', 5000);
+    });
   }
 
   function buildToolbar() {
@@ -4752,8 +4898,19 @@ var qrcode = function() {
     TOOLS.forEach(function (t) {
       if (t.sep) { var s = document.createElement('div'); s.className = 'tb-sep'; s.setAttribute('role', 'separator'); bar.appendChild(s); return; }
       var host = bar, cls = 'tb';
+      if (t.mode) {   /* Bewegen, Drehen, Höhe: eine Gruppe, genau einer ist aktiv */
+        if (!$('tbModes')) {
+          var mg = document.createElement('div');
+          mg.id = 'tbModes'; mg.className = 'tb-modes'; mg.setAttribute('role', 'group'); mg.setAttribute('aria-label', 'Modus');
+          bar.appendChild(mg);
+        }
+        host = $('tbModes');
+      }
+      if (t.seg) { $(t.group === 'view' ? 'sideList' : 'advList').appendChild(buildSeg(t)); return; }
       if (t.group === 'view') {
         host = $('sideList'); cls = 'mi';
+      } else if (t.group === 'adv') {
+        host = $(t.id === 'advanced' ? 'advTop' : 'advList'); cls = 'mi';
       } else if (t.group) {
         if (!menuEls[t.group]) {
           var G = GROUPS[t.group];
@@ -4761,7 +4918,7 @@ var qrcode = function() {
           gb.type = 'button'; gb.className = 'tb'; gb.id = 'tbg-' + t.group;
           gb.setAttribute('aria-label', G.label + ' (Untermenü)'); gb.title = G.tip;
           gb.setAttribute('aria-haspopup', 'true'); gb.setAttribute('aria-expanded', 'false');
-          gb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[G.icon] + '</svg><span>' + G.label + ' ▾</span>';
+          gb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[G.icon] + '</svg><span>' + G.label + CHEVRON + '</span>';
           (function (key) { gb.addEventListener('click', function () { toggleMenu(key); }); })(t.group);
           bar.appendChild(gb); groupBtns[t.group] = gb;
           var mn = document.createElement('div');
@@ -4774,12 +4931,20 @@ var qrcode = function() {
       b.type = 'button'; b.className = cls; b.id = 'tb-' + t.id;
       b.setAttribute('aria-label', t.label + (t.tip && t.tip.indexOf(t.label) !== 0 ? ': ' + t.tip : ''));
       b.title = t.tip + (t.key ? ' (' + t.key + ')' : '');
-      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[t.icon] + '</svg><span>' + t.label + '</span>' ;
+      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS[t.icon] + '</svg><span>' + t.label + '</span>' +
+        (t.tgl && t.group ? '<i class="sw" aria-hidden="true"></i>' : '');   /* Kippschalter zeigt an/aus */
+      if (t.tgl) b.classList.add('tgl');
       if (t.key && t.group) b.dataset.key = t.key;
       b.addEventListener('click', function () { if (t.group) closeMenu(); onTool(t.id); });
       host.appendChild(b);
       tbEls[t.id] = b;
     });
+    /* „H⁺ Proton“ aus dem Periodensystem in den Bereich „Erweitert“ holen, vor „H-Brücken“ */
+    var pb = $('btnProton');
+    pb.className = 'mi'; pb.hidden = false;
+    pb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + ICONS.proton + '</svg><span>H⁺ Proton hinzufügen</span>';
+    $('advList').insertBefore(pb, tbEls.hbonds);
+    buildRotHelp($('advList'));
     if (!document.documentElement.requestFullscreen) tbEls.full.hidden = true;
     document.addEventListener('pointerdown', function (e) {
       if (openMenu && !menuEls[openMenu].contains(e.target) && !groupBtns[openMenu].contains(e.target)) closeMenu();
@@ -4794,10 +4959,11 @@ var qrcode = function() {
       tbEls[p[0]].classList.toggle('on', p[1]); tbEls[p[0]].setAttribute('aria-pressed', p[1] ? 'true' : 'false');
     });
     tbEls.shadow.classList.toggle('on', ui.shadow); tbEls.shadow.setAttribute('aria-pressed', ui.shadow ? 'true' : 'false');
-    tbEls.ball.classList.toggle('on', ui.ball > 0); tbEls.ball.setAttribute('aria-pressed', ui.ball > 0 ? 'true' : 'false');
-    tbEls.ball.querySelector('span').textContent = 'Atomkugel: ' + ['aus', 'durchsichtig', 'undurchsichtig'][ui.ball];
-    tbEls.hbonds.hidden = !ui.advanced;
-    $('btnProton').hidden = !ui.advanced;
+    Array.prototype.forEach.call(tbEls.ball.querySelectorAll('.mseg-opts button'), function (b, i) {
+      b.classList.toggle('on', ui.ball === i); b.setAttribute('aria-pressed', ui.ball === i ? 'true' : 'false');
+    });
+    tbEls.hbonds.disabled = !ui.advanced;   /* sichtbar, aber erst mit „Erweiterte Funktionen“ nutzbar */
+    $('btnProton').disabled = !ui.advanced || protonBlocked;
     Array.prototype.forEach.call(document.querySelectorAll('.adv-only'), function (x) { x.hidden = !ui.advanced; });
     tbEls.undo.disabled = !hist.undo.length;
     tbEls.redo.disabled = !hist.redo.length;
@@ -4809,7 +4975,7 @@ var qrcode = function() {
     tbEls.connect.disabled = bondLocked() || !(a && world.findOverlaps(world.component(a), K.REACH).length);
   }
 
-  function onTool(id) {
+  function onTool(id, arg) {
     switch (id) {
       case 'move': case 'rotate': case 'height': setMode(id); break;
       case 'undo': undo(); break;
@@ -4825,13 +4991,13 @@ var qrcode = function() {
       case 'electrons': ui.electrons = !ui.electrons; refresh(); saveSoon(); break;
       case 'rings': ui.rings = !ui.rings; refresh(); saveSoon(); say(ui.rings ? 'Auswahlkreise an.' : 'Auswahlkreise aus.', '', 2000); break;
       case 'shadow': ui.shadow = !ui.shadow; refresh(); saveSoon(); say(ui.shadow ? 'Schatten an: Je höher ein Atom schwebt, desto größer und blasser sein Schatten.' : 'Schatten aus.', '', 2500); break;
-      case 'ball': ui.ball = (ui.ball + 1) % 3; refresh(); saveSoon(); say(['Atomkugel aus.', 'Atomkugel durchsichtig: Die Wolken liegen innerhalb der Atomkugel.', 'Atomkugel undurchsichtig: zum Betrachten. Bindungen bilden oder lösen geht hier nicht.'][ui.ball], '', 3000); break;
+      case 'ball': ui.ball = arg === undefined ? (ui.ball + 1) % 3 : arg; refresh(); saveSoon(); say(['Atomkugel aus.', 'Atomkugel durchsichtig: Die Wolken liegen innerhalb der Atomkugel.', 'Atomkugel undurchsichtig: zum Betrachten. Bindungen bilden oder lösen geht hier nicht.'][ui.ball], '', 3000); break;
       case 'png': exportPng(); break;
       case 'spin': ui.spin = !ui.spin; syncToolbar(); break;
       case 'hbonds': ui.hbonds = !ui.hbonds; refresh(); saveSoon(); say(ui.hbonds ? 'Wasserstoffbrücken an: Bringe ein H-Atom an N, O oder F nah an ein freies Elektronenpaar eines anderen Moleküls.' : 'Wasserstoffbrücken aus.', 'ok', 4000); break;
       case 'advanced':
         ui.advanced = !ui.advanced; refresh(); saveSoon();
-        say(ui.advanced ? 'Erweitert: „H⁺ Proton“ steht neben dem Periodensystem, „H-Brücken“ unter „Anzeige“, Drehen um Einfachbindungen in der Bindungsleiste.' : 'Erweiterte Funktionen ausgeblendet.', 'ok', 5000);
+        say(ui.advanced ? 'Erweiterte Funktionen an: „H⁺ Proton“ und „H-Brücken“ im Bereich „Erweitert“, Drehen um Einfachbindungen in der Bindungsleiste.' : 'Erweiterte Funktionen aus.', 'ok', 5000);
         break;
       case 'reset': resetView(); break;
       case 'full': toggleFull(); break;
@@ -4855,6 +5021,7 @@ var qrcode = function() {
     s.textContent = msg;
     s.className = kind === 'ok' ? 'ok' : '';
     s.hidden = false;
+    placeStatus();
     clearTimeout(statusTimer);
     statusTimer = setTimeout(function () { s.hidden = true; }, ms || 3800);
   }
@@ -4998,6 +5165,27 @@ var qrcode = function() {
     R.renderer.setSize(w, h, false);
     R.camera.aspect = w / h;
     R.camera.updateProjectionMatrix();
+    layoutOverlays();
+  }
+
+  /* Bindungsleiste, Seitenleiste und Hinweiszeile dürfen sich nicht überdecken:
+     Die Seitenleiste endet über der Bindungsleiste, die Hinweiszeile steht über allem, was unten liegt. */
+  function layoutOverlays() {
+    var bar = $('bondbar');
+    var h = bar.hidden ? 0 : bar.offsetHeight;
+    $('stage').style.setProperty('--side-bottom', (h ? h + 16 : 8) + 'px');
+    placeStatus();
+  }
+  function placeStatus() {
+    var s = $('status');
+    if (s.hidden) return;
+    var st = $('stage').getBoundingClientRect(), r = s.getBoundingClientRect(), bottom = 10;
+    [$('bondbar'), $('info'), document.querySelector('#sidePanels > :not([hidden])')].forEach(function (e) {
+      if (!e || e.hidden || !e.offsetParent) return;
+      var q = e.getBoundingClientRect();
+      if (q.width && q.left < r.right && q.right > r.left) bottom = Math.max(bottom, st.bottom - q.top + 8);
+    });
+    s.style.bottom = bottom + 'px';
   }
 
   function resetView() {
@@ -5386,14 +5574,33 @@ var qrcode = function() {
   }
 
   /* ---------- Aktionen ---------- */
+  /* Freier Platz für neue Atome oder Moleküle: um die Blickmitte herum, möglichst sichtbar
+     und nicht hinter Werkzeugleiste, Karten, Bindungsleiste oder Seitenleiste */
   function freeSpot(minDist) {
-    for (var i = 0; i < 80; i++) {
+    var pad = minDist >= 4 ? 90 : 60, fallback = null;   /* Bildschirmabstand der Mitte zu Rändern und Leisten */
+    var cx = orbit.target ? orbit.target.x : 0, cz = orbit.target ? orbit.target.z : 0;
+    for (var i = 0; i < 120; i++) {
       var ang = i * 2.399963, rad = 1.2 + Math.sqrt(i) * 1.15;
-      var p = new T.Vector3(Math.cos(ang) * rad, 0, Math.sin(ang) * rad * 0.7);
-      var ok = world.atoms.every(function (a) { return a.pos.distanceTo(p) >= minDist; });
-      if (ok) return p;
+      var p = new T.Vector3(cx + Math.cos(ang) * rad, 0, cz + Math.sin(ang) * rad * 0.7);
+      if (!world.atoms.every(function (a) { return a.pos.distanceTo(p) >= minDist; })) continue;
+      if (onScreenFree(p, pad)) return p;
+      if (!fallback) fallback = p;
     }
-    return new T.Vector3((Math.random() - 0.5) * 10, 0, (Math.random() - 0.5) * 6);
+    return fallback || new T.Vector3((Math.random() - 0.5) * 10, 0, (Math.random() - 0.5) * 6);
+  }
+  function onScreenFree(p, pad) {
+    if (!R.camera) return true;
+    var st = $('stage').getBoundingClientRect();
+    if (!st.width) return true;
+    var c = p.clone().project(R.camera);
+    if (c.z > 1) return false;
+    var x = st.left + (c.x + 1) / 2 * st.width, y = st.top + (1 - c.y) / 2 * st.height;
+    if (x < st.left + pad || x > st.right - pad || y < st.top + pad || y > st.bottom - pad) return false;
+    return ![$('toolbar'), $('info'), $('bondbar'), $('taskcard'), $('coach'), $('sidePanels'), document.querySelector('.side-tabs')].some(function (e) {
+      if (!e || e.hidden || !e.offsetParent) return false;
+      var q = e.getBoundingClientRect();
+      return q.width && x > q.left - pad && x < q.right + pad && y > q.top - pad && y < q.bottom + pad;
+    });
   }
   function randQuat() {
     return new T.Quaternion().setFromEuler(new T.Euler(Math.random() * 6.283, Math.random() * 6.283, Math.random() * 6.283));
@@ -5728,8 +5935,8 @@ var qrcode = function() {
       return 'Ziehe ein weiteres Atom heran, bis sich eine blaue Wolke mit einer anderen blauen Wolke berührt.';
     }
     if (!d.complete) return 'Noch ' + d.open + (d.open === 1 ? ' blaue Wolke' : ' blaue Wolken') + ' offen. Ein weiteres Atom daran ziehen, oder eine Bindung antippen und mit „+“ verstärken.';
-    if (!ui.polar && !d.ionic) return 'Fertig: Keine Bindungsstelle ist mehr offen. Mit „Polarität“ unter „Anzeige“ siehst du, ob das Molekül ein Dipol ist.';
-    if (d.ionic && !ui.lewis) return 'Mit „Lewis-Formel“ unter „Anzeige“ siehst du die Ionen in Klammern mit ihrer Ladung.';
+    if (!ui.polar && !d.ionic) return 'Fertig: Keine Bindungsstelle ist mehr offen. Mit „Polarität“ unter „Darstellung“ siehst du, ob das Molekül ein Dipol ist.';
+    if (d.ionic && !ui.lewis) return 'Mit „Lewis-Formel“ unter „Darstellung“ siehst du die Ionen in Klammern mit ihrer Ladung.';
     return '';
   }
 
@@ -5775,9 +5982,10 @@ var qrcode = function() {
         html += '<p class="geo">' + e.ve + (e.ve === 1 ? ' Valenzelektron' : ' Valenzelektronen') + ', Periode ' + e.p + ', Gruppe ' + e.g + '</p>';
       }
     } else if (!world.atoms.length) {
-      html += '<p class="geo"><b>Die Fläche ist leer.</b></p><p class="tip">Wähle unten ein Element oder öffne die Beispiele.</p>';
+      /* als .row, damit die eingeklappte Infokarte nicht leer ist */
+      html += '<div class="row geo"><b>Die Fläche ist leer.</b></div><p class="tip">Hole dir Atome aus dem Reiter „Atome“ oder öffne die Beispiele.</p>';
     } else {
-      html += '<p class="geo"><b>Nichts ausgewählt.</b></p>';
+      html += '<div class="row geo"><b>Nichts ausgewählt.</b></div>';
     }
     if (ui.lewis && focus) {
       var lw = K.lewis(world, comp);
@@ -5806,10 +6014,10 @@ var qrcode = function() {
     info.classList.toggle('under', !!b);
     info.classList.toggle('min', !!ui.infoMin);
     var tg = document.createElement('button');
-    tg.type = 'button'; tg.className = 'infotoggle';
+    tg.type = 'button'; tg.className = 'infotoggle fold';
     tg.setAttribute('aria-expanded', ui.infoMin ? 'false' : 'true');
     tg.setAttribute('aria-label', ui.infoMin ? 'Infokarte ausklappen' : 'Infokarte einklappen');
-    tg.textContent = ui.infoMin ? '\u25b4' : '\u25be';
+    tg.innerHTML = CHEVRON;
     tg.addEventListener('click', function () { ui.infoMin = !ui.infoMin; refresh(); saveSoon(); });
     info.insertBefore(tg, info.firstChild);
 
@@ -5831,6 +6039,7 @@ var qrcode = function() {
       if (!nw.hidden) nw.innerHTML = newmanSvg(b);
       $('bbProton').hidden = !(ui.advanced && b.type !== 'ionic' && b.order === 1 && (A2.sym === 'H') !== (B2.sym === 'H'));
     }
+    layoutOverlays();
     var nA = world.atoms.length, nB = world.bonds.length;
     $('gl').setAttribute('aria-label', 'Arbeitsfläche mit ' + nA + (nA === 1 ? ' Atom' : ' Atomen') + ' und ' + nB + (nB === 1 ? ' Bindung' : ' Bindungen') + '. Beschreibung in der Infokarte.');
     syncToolbar();
@@ -6132,7 +6341,7 @@ var qrcode = function() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function () {
       try {
-        localStorage.setItem(STORE_KEY, JSON.stringify({ w: world.serialize(), ui: { snap: ui.snap, labels: ui.labels, polar: ui.polar, lewis: ui.lewis, electrons: ui.electrons, rings: ui.rings, infoMin: ui.infoMin, mode: ui.mode, advanced: ui.advanced, hbonds: ui.hbonds, shadow: ui.shadow, ball: ui.ball }, dockClosed: dockClosed }));
+        localStorage.setItem(STORE_KEY, JSON.stringify({ w: world.serialize(), ui: { snap: ui.snap, labels: ui.labels, polar: ui.polar, lewis: ui.lewis, electrons: ui.electrons, rings: ui.rings, infoMin: ui.infoMin, mode: ui.mode, advanced: ui.advanced, hbonds: ui.hbonds, shadow: ui.shadow, ball: ui.ball } }));
       } catch (e) { /* Speicher nicht verfügbar */ }
     }, 400);
   }
@@ -6146,7 +6355,6 @@ var qrcode = function() {
       if (!ok) return false;
       world.load(st.w);
       if (st.ui) { ui.snap = st.ui.snap !== false; ui.labels = st.ui.labels !== false; ui.polar = !!st.ui.polar; ui.lewis = !!st.ui.lewis; ui.electrons = !!st.ui.electrons; ui.rings = st.ui.rings !== false; ui.infoMin = !!st.ui.infoMin; ui.advanced = !!st.ui.advanced; ui.hbonds = !!st.ui.hbonds; ui.ball = (st.ui.ball === 1 || st.ui.ball === 2) ? st.ui.ball : 0; ui.shadow = st.ui.shadow !== false; if (/^(move|rotate|height)$/.test(st.ui.mode)) ui.mode = st.ui.mode; }
-      dockClosed = !!st.dockClosed;
       return true;
     } catch (e) { return false; }
   }
@@ -6277,7 +6485,8 @@ var qrcode = function() {
       b.disabled = !ok;
       b.classList.toggle('off', !ok);
     });
-    $('btnProton').disabled = !!list && list.indexOf('H') < 0;
+    protonBlocked = !!list && list.indexOf('H') < 0;
+    $('btnProton').disabled = !ui.advanced || protonBlocked;
   }
 
   /* Aufgaben mit Protonen, Ladung oder Markierung brauchen die erweiterten Funktionen */
@@ -6582,13 +6791,11 @@ var qrcode = function() {
       ov.addEventListener('click', function (e) { if (e.target === ov) closeOverlays(); });
       Array.prototype.forEach.call(ov.querySelectorAll('[data-close]'), function (x) { x.addEventListener('click', closeOverlays); });
     });
-    $('dockToggle').addEventListener('click', function () { setDock(!dockClosed); saveSoon(); });
     $('btnProton').addEventListener('click', addProton);
     window.addEventListener('keydown', onKey);
 
     var restored = restore();
     if (!restored) starterScene();
-    setDock(dockClosed);
 
     if (!initGL()) {
       $('nogl').hidden = false;
@@ -6616,13 +6823,6 @@ var qrcode = function() {
     if (!restored) say('Ziehe ein H-Atom an das O, bis sich blaue Wolken berühren.', '', 9000);
     openFromHash();
     requestAnimationFrame(loop);
-  }
-
-  function setDock(closed) {
-    dockClosed = closed;
-    $('dock').classList.toggle('closed', closed);
-    $('dockToggle').setAttribute('aria-expanded', closed ? 'false' : 'true');
-    $('dockToggle').textContent = closed ? 'Einblenden' : 'Ausblenden';
   }
 
   /* Für Tests: Zugriff auf den inneren Zustand, nur wenn die Testkennung gesetzt ist. */

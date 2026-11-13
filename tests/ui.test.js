@@ -21,28 +21,33 @@ if (out) fs.mkdirSync(out, { recursive: true });
   const ok = (c, m) => { console.log((c ? 'ok: ' : 'FEHLER: ') + m); if (!c) fails++; };
   const info = () => page.$eval('#info', e => e.textContent);
   const vis = sel => page.$eval(sel, e => !e.hidden && e.offsetParent !== null);
-  // Anzeige-Schalter liegen in der Seitenleiste rechts: Bereich „Anzeige“ öffnen, falls zu
+  // Seitenleiste rechts mit den Bereichen „Darstellung“, „Atome“ und „Erweitert“: öffnen, falls zu
   const openView = async () => { if (await page.$eval('#sideBody', e => e.hidden)) await page.click('#sideToggle'); };
   const openPse = async () => { if (await page.$eval('#dock', e => e.hidden)) await page.click('#tabPse'); };
+  const openAdv = async () => { if (await page.$eval('#advBody', e => e.hidden)) await page.click('#tabAdv'); };
+  const usable = sel => page.$eval(sel, e => !e.hidden && !e.disabled && e.offsetParent !== null);
 
-  // Seitenleiste: beim ersten Start ist „Elemente“ offen, höchstens ein Bereich offen
-  ok(await vis('#dock') && !(await vis('#sideBody')), 'Seitenleiste: anfangs Elemente offen, Anzeige zu');
+  // Seitenleiste: beim ersten Start ist „Atome“ offen, höchstens ein Bereich offen
+  ok(await vis('#dock') && !(await vis('#sideBody')) && !(await vis('#advBody')), 'Seitenleiste: anfangs Atome offen, Darstellung und Erweitert zu');
   await page.click('#sideToggle');
-  ok(await vis('#sideBody') && !(await vis('#dock')), 'Seitenleiste: Anzeige öffnet, Elemente klappt zu');
-  ok(!!(await page.$('#sideList #tb-labels')) && !(await page.$('#tbg-view')), 'Anzeige-Schalter in der Seitenleiste, kein Anzeige-Menü mehr');
-  await page.click('#sideToggle');
-  ok(!(await vis('#sideBody')) && !(await vis('#dock')), 'Seitenleiste: Reiter erneut klappt zu');
+  ok(await vis('#sideBody') && !(await vis('#dock')), 'Seitenleiste: Darstellung öffnet, Atome klappt zu');
+  ok(!!(await page.$('#sideList #tb-labels')) && !(await page.$('#tbg-view')), 'Darstellungs-Schalter in der Seitenleiste, kein eigenes Menü');
+  ok(!!(await page.$('.menu #tb-spin')) && !(await page.$('#sideList #tb-spin')), '„Ansicht kreisen lassen“ im Menü „Ansicht“');
+  await page.click('#tabAdv');
+  ok(await vis('#advBody') && !(await vis('#sideBody')), 'Seitenleiste: Erweitert öffnet, Darstellung klappt zu');
+  ok(!!(await page.$('#advBody #btnProton')) && !!(await page.$('#advBody #tb-hbonds')) && !!(await page.$('#advBody #tb-advanced')), 'Erweitert enthält Schalter, Proton und H-Brücken');
+  await page.click('#tabAdv');
+  ok(!(await vis('#advBody')) && !(await vis('#sideBody')) && !(await vis('#dock')), 'Seitenleiste: Reiter erneut klappt zu');
 
-  // Ausgangslage: alles versteckt
-  ok(!(await vis('#btnProton')), 'Proton-Knopf anfangs versteckt');
-  ok(await page.$eval('#tb-hbonds', e => e.hidden), 'H-Brücken-Schalter anfangs versteckt');
+  // Ausgangslage: erweiterte Werkzeuge sichtbar, aber gesperrt
+  await openAdv();
+  ok(await vis('#btnProton') && !(await usable('#btnProton')), 'Proton-Knopf anfangs gesperrt');
+  ok(!(await usable('#tb-hbonds')), 'H-Brücken-Schalter anfangs gesperrt');
 
-  // Erweitert einschalten über das Menü
-  await openView();
+  // Erweiterte Funktionen einschalten im Bereich „Erweitert“
   await page.click('#tb-advanced');
-  await openPse();
-  ok(await vis('#btnProton'), 'Proton-Knopf nach „Erweitert“ sichtbar (Bereich „Elemente“)');
-  ok(!(await page.$eval('#tb-hbonds', e => e.hidden)), 'H-Brücken-Schalter sichtbar');
+  ok(await usable('#btnProton'), 'Proton-Knopf nach „Erweiterte Funktionen“ nutzbar');
+  ok(await usable('#tb-hbonds'), 'H-Brücken-Schalter nutzbar');
 
   // H2O + Proton -> H3O+
   await page.evaluate(() => { const k = window.__kwm; k.world.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('h2o'); });
@@ -131,19 +136,19 @@ if (out) fs.mkdirSync(out, { recursive: true });
 
   // Atomkugel: aus → durchsichtig → undurchsichtig (Bindungen gesperrt) → aus
   await openView();
-  const ballLbl = () => page.$eval('#tb-ball span', e => e.textContent);
-  ok((await ballLbl()) === 'Atomkugel: aus', 'Atomkugel anfangs aus');
-  await page.click('#tb-ball');
-  ok((await ballLbl()) === 'Atomkugel: durchsichtig', 'Atomkugel: durchsichtig');
-  await page.click('#tb-ball');
-  ok((await ballLbl()) === 'Atomkugel: undurchsichtig', 'Atomkugel: undurchsichtig');
+  const ballLbl = () => page.$eval('#tb-ball button[aria-pressed="true"]', e => e.textContent);
+  ok((await ballLbl()) === 'aus', 'Atomkugel anfangs aus');
+  await page.click('#tb-ball-1');
+  ok((await ballLbl()) === 'durchsichtig' && await page.evaluate(() => window.__kwm.ui.ball === 1), 'Atomkugel: durchsichtig');
+  await page.keyboard.press('u');
+  ok((await ballLbl()) === 'undurchsichtig', 'Atomkugel: Taste U schaltet weiter auf undurchsichtig');
   await page.evaluate(() => { const k = window.__kwm, w = k.world; k.ui.selAtom = null; k.ui.selBond = w.bonds[0].id; k.refresh(); });
   ok(await page.$eval('#bbBreak', e => e.disabled), 'undurchsichtige Atomkugel: „Lösen“ gesperrt');
   const nb = await page.evaluate(() => { const k = window.__kwm; k.deleteSelection && k.deleteSelection(); return k.world.bonds.length; });
   ok(nb === 1, 'undurchsichtige Atomkugel: Bindung bleibt bestehen');
   await shot(page, 'atomkugel.png');
-  await page.click('#tb-ball');
-  ok((await ballLbl()) === 'Atomkugel: aus' && !(await page.$eval('#bbBreak', e => e.disabled)), 'Atomkugel wieder aus, „Lösen“ frei');
+  await page.click('#tb-ball-0');
+  ok((await ballLbl()) === 'aus' && !(await page.$eval('#bbBreak', e => e.disabled)), 'Atomkugel wieder aus, „Lösen“ frei');
   // Schatten: standardmäßig an, per Schalter aus und wieder an
   ok(await page.$eval('#tb-shadow', e => e.getAttribute('aria-pressed') === 'true'), 'Schatten anfangs an');
   await page.click('#tb-shadow');
@@ -156,7 +161,7 @@ if (out) fs.mkdirSync(out, { recursive: true });
   ok(/Mehrfachbindung/.test(await page.$eval('#status', e => e.textContent)), 'Ethen: Hinweis zur Doppelbindung');
 
   // Wasserstoffbrücken
-  await openView(); await page.click('#tb-hbonds');
+  await openAdv(); await page.click('#tb-hbonds');
   await page.evaluate(() => {
     const k = window.__kwm, w = k.world, T = window.THREE;
     w.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('h2o'); k.addExample('h2o');
@@ -174,9 +179,8 @@ if (out) fs.mkdirSync(out, { recursive: true });
   await shot(page, 'hbrücke.png');
 
   // Erweitert aus: alles wieder weg
-  await openView(); await page.click('#tb-advanced');
-  await openPse();
-  ok(!(await vis('#btnProton')) && await page.$eval('#tb-hbonds', e => e.hidden), 'Erweitert aus: Knöpfe versteckt');
+  await openAdv(); await page.click('#tb-advanced');
+  ok(!(await usable('#btnProton')) && !(await usable('#tb-hbonds')), 'Erweitert aus: Knöpfe gesperrt');
   t = await info();
   ok(!/Wasserstoffbrücke/.test(t), 'Erweitert aus: keine H-Brücken-Anzeige');
 
@@ -187,12 +191,49 @@ if (out) fs.mkdirSync(out, { recursive: true });
   ok(!(await taskSetNames()).some(s => /Erweitert/.test(s)), 'Aufgabenset „Erweitert“ versteckt');
   // Eine erweiterte Aufgabe (etwa aus einem geteilten Link) schaltet „Erweitert“ selbst ein
   await page.evaluate(() => window.__kwm.startTask(window.KWM.Tasks.BUILTIN.find(t => t.adv)));
-  await openPse();
-  ok(await page.evaluate(() => window.__kwm.ui.advanced) && await vis('#btnProton'), 'erweiterte Aufgabe schaltet „Erweitert“ ein');
+  await openAdv();
+  ok(await page.evaluate(() => window.__kwm.ui.advanced) && await usable('#btnProton'), 'erweiterte Aufgabe schaltet „Erweitert“ ein');
   ok(await page.evaluate(() => window.__kwm.world.atoms.filter(a => window.__kwm.world.isProton(a)).length === 1), 'Startatome der Aufgabe enthalten ein Proton');
   ok(await advEx(), 'Beispiel-Kategorie mit „Erweitert“ sichtbar');
   ok((await taskSetNames()).some(s => /Erweitert/.test(s)), 'Aufgabenset „Erweitert“ mit „Erweitert“ sichtbar');
   await page.click('#tcClose');
+
+  // „Drehen um Einfachbindungen“: Anleitung aufklappen, mit Ethan ausprobieren (schaltet „Erweitert“ selbst ein)
+  await page.evaluate(() => { const k = window.__kwm; k.ui.advanced = false; k.refresh(); });
+  await openAdv();
+  ok(!(await vis('#advRotText')), 'Anleitung „Drehen um Einfachbindungen“ anfangs zu');
+  await page.click('#advRotHelp');
+  ok(await vis('#advRotText') && await page.$eval('#advRotHelp', e => e.getAttribute('aria-expanded') === 'true'), 'Anleitung klappt auf');
+  await page.click('#advRotTry');
+  await page.waitForTimeout(200);
+  ok(await page.evaluate(() => { const k = window.__kwm, b = k.ui.selBond && k.world.bond(k.ui.selBond); return k.ui.advanced && !!b && k.world.atom(b.a).sym === 'C' && k.world.atom(b.b).sym === 'C'; }), '„Mit Ethan ausprobieren“: Erweitert an, C–C-Bindung gewählt');
+  ok(await vis('#bbNewman'), '„Mit Ethan ausprobieren“: Newman-Projektion sichtbar');
+  // Layout: Seitenbereich endet über der Bindungsleiste, Hinweiszeile überdeckt sie nicht
+  const box = sel => page.$eval(sel, e => { const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom }; });
+  const cut = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+  await page.evaluate(() => { const s = document.getElementById('status'); s.textContent = 'Eine lange Hinweiszeile zum Testen der Lage über der Bindungsleiste.'; s.hidden = false; window.__kwm.refresh(); });
+  ok((await box('#advBody')).b <= (await box('#bondbar')).t, 'Seitenbereich „Erweitert“ endet über der Bindungsleiste');
+  ok(!cut(await box('#status'), await box('#bondbar')), 'Hinweiszeile überdeckt die Bindungsleiste nicht');
+  await page.click('#advRotHelp');
+  ok(!(await vis('#advRotText')), 'Anleitung klappt wieder zu');
+
+  // Werkzeugleiste: Modi als Gruppe, altes Dock entfernt
+  ok(await page.$$eval('#tbModes .tb', bs => bs.map(b => b.id).join()) === 'tb-move,tb-rotate,tb-height', 'Bewegen, Drehen, Höhe als Gruppe');
+  ok(!(await page.$('#dockToggle')), 'alter Knopf „Ausblenden“ des Docks entfernt');
+
+  // Neue Atome landen sichtbar auf der Fläche und nicht hinter der Infokarte
+  await page.evaluate(() => { const k = window.__kwm; k.world.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('h2o'); k.ui.selAtom = null; k.refresh(); });
+  await openPse();
+  for (const s of ['C', 'N', 'O', 'F', 'Cl', 'S']) await page.click(`#pse button.el[data-sym="${s}"]`);
+  const hidden = await page.evaluate(() => {
+    const k = window.__kwm, st = document.getElementById('stage').getBoundingClientRect();
+    const blockers = ['info', 'toolbar', 'sidePanels'].map(id => document.getElementById(id).getBoundingClientRect()).filter(r => r.width);
+    return k.world.atoms.slice(3).filter(a => {
+      const c = a.pos.clone().project(k.R.camera), x = st.left + (c.x + 1) / 2 * st.width, y = st.top + (1 - c.y) / 2 * st.height;
+      return x < st.left || x > st.right || y < st.top || y > st.bottom || blockers.some(r => x > r.left && x < r.right && y > r.top && y < r.bottom);
+    }).map(a => a.sym);
+  });
+  ok(hidden.length === 0, 'neue Atome sichtbar, nicht hinter Karten oder Leisten' + (hidden.length ? ': ' + hidden.join() : ''));
 
   // Speichern über Neuladen (gleiche Seite, gleicher localStorage)
   await page.evaluate(() => { const k = window.__kwm; k.world.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('h2o'); k.addProton(); });
@@ -218,6 +259,15 @@ if (out) fs.mkdirSync(out, { recursive: true });
   console.log('  Handy: Bindungsleiste', JSON.stringify(bb));
   ok(bb.newman && bb.left >= 0 && bb.right <= 390, 'Handy: Bindungsleiste mit Newman-Projektion innerhalb der Bildschirmbreite');
   ok(bb.height <= (bb.stageBottom - bb.stageTop) * 0.5, 'Handy: Bindungsleiste belegt höchstens die halbe Arbeitsfläche');
+  // Handy: Seitenbereich als Blatt von unten, über der Bindungsleiste, Werkzeugleiste und Reiter bleiben frei
+  if (await phone.$eval('#sideBody', e => e.hidden)) await phone.click('#sideToggle');
+  const pb = await phone.evaluate(() => {
+    const r = id => { const q = document.getElementById(id).getBoundingClientRect(); return { l: q.left, t: q.top, r: q.right, b: q.bottom }; };
+    const t = document.querySelector('.side-tabs').getBoundingClientRect();
+    return { sheet: r('sideBody'), bar: r('bondbar'), tool: r('toolbar'), tabsLeft: t.left };
+  });
+  ok(pb.sheet.t >= pb.tool.b && pb.sheet.b <= pb.bar.t, 'Handy: Blatt zwischen Werkzeugleiste und Bindungsleiste');
+  ok(pb.sheet.r <= pb.tabsLeft && pb.tabsLeft > 300, 'Handy: Reiter rechts neben dem Blatt');
   await shot(phone, 'handy.png');
 
   ok(errors.length === 0, 'keine JS-Fehler' + (errors.length ? ': ' + errors.join(' | ') : ''));
