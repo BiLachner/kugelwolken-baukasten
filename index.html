@@ -5104,6 +5104,7 @@ var qrcode = function() {
      Sonst wäre ein gebundenes H (Wolke um d verschoben) fast so groß wie ein C.
      Real: H/C kovalent ≈ 0,4, van der Waals ≈ 0,7 → 0,55/0,97 ≈ 0,57 liegt dazwischen */
   var S1_R = 0.55;
+  var NUC_R = 0.09;  /* Radius des Atomkerns (vorher 0.13); Elektronen haben etwa 0.06 */
   var S1_NUC = 0.3;  /* Bindung mit H: so weit reicht die Bindungswolke über den H-Kern hinaus */
   function isS1(p) { return p.inner === 0; }
 
@@ -5273,18 +5274,36 @@ var qrcode = function() {
     if (labelCache[key]) return labelCache[key];
     var c = document.createElement('canvas'); c.width = c.height = 128;
     var x = c.getContext('2d');
-    var xs = n === 1 ? [64] : [44, 84];
+    /* Elektronen als kleine, schattierte dunkle Kugeln ohne Rand: liegen in der Wolke statt aufgeklebt */
+    var xs = n === 1 ? [64] : [47, 81], r = 12;
     xs.forEach(function (px) {
-      x.beginPath(); x.arc(px, 64, 15, 0, Math.PI * 2);
-      x.fillStyle = '#ffffff'; x.fill(); x.lineWidth = 5; x.strokeStyle = 'rgba(12,20,28,0.85)'; x.stroke();
+      var gr = x.createRadialGradient(px - r * 0.35, 64 - r * 0.4, r * 0.1, px, 64, r);
+      gr.addColorStop(0, '#5d6f82'); gr.addColorStop(0.55, '#1f2d3b'); gr.addColorStop(1, '#0e1720');
+      x.beginPath(); x.arc(px, 64, r, 0, Math.PI * 2); x.fillStyle = gr; x.fill();
     });
     var t = new T.CanvasTexture(c); t.anisotropy = 4;
     labelCache[key] = t;
     return t;
   }
+  /* Atomkern: dunkler Punkt mit weißem „+“ (positiv geladen), deutlich anders als die Elektronenkügelchen */
+  function nucTex() {
+    if (labelCache.nucleus) return labelCache.nucleus;
+    var c = document.createElement('canvas'); c.width = c.height = 128;
+    var x = c.getContext('2d');
+    var gr = x.createRadialGradient(50, 46, 6, 64, 64, 58);
+    gr.addColorStop(0, '#4a5a6c'); gr.addColorStop(0.6, '#1b2733'); gr.addColorStop(1, '#0c141c');
+    x.beginPath(); x.arc(64, 64, 58, 0, Math.PI * 2); x.fillStyle = gr; x.fill();
+    x.strokeStyle = '#ffffff'; x.lineWidth = 14; x.lineCap = 'round';
+    x.beginPath(); x.moveTo(64, 34); x.lineTo(64, 94); x.moveTo(34, 64); x.lineTo(94, 64); x.stroke();
+    var t = new T.CanvasTexture(c); t.anisotropy = 4;
+    labelCache.nucleus = t;
+    return t;
+  }
   function makeDotSprite(n, size) {
-    var sp = new T.Sprite(new T.SpriteMaterial({ map: dotTex(n), depthTest: false, transparent: true }));
-    sp.scale.set(size, size, 1); sp.renderOrder = 22; sp.visible = false;
+    /* vor den Wolken zeichnen (renderOrder 1.5 < Wolken 2 / Bindungen): die halbtransparente Wolke liegt darüber
+       und tönt die Elektronen; mit Tiefentest verdecken Atome davor und die undurchsichtige Atomkugel sie */
+    var sp = new T.Sprite(new T.SpriteMaterial({ map: dotTex(n), depthTest: true, depthWrite: false, transparent: true }));
+    sp.scale.set(size, size, 1); sp.renderOrder = 1.5; sp.visible = false;
     return sp;
   }
   function makeTextSprite(txt, color, size) {
@@ -5317,7 +5336,9 @@ var qrcode = function() {
     if (p.inner > 0) {
       var im = new T.Mesh(sphereGeo, mats.inner); im.scale.setScalar(p.inner); im.renderOrder = 1; g.add(im);
     }
-    var nu = new T.Mesh(sphereGeo, mats.nucleus); nu.scale.setScalar(0.13); g.add(nu);
+    /* Kern liegt wie die Elektronen in den Wolken (wird von ihnen getönt) */
+    var nu = new T.Sprite(new T.SpriteMaterial({ map: nucTex(), depthTest: true, depthWrite: false, transparent: true }));
+    nu.scale.set(NUC_R * 2.3, NUC_R * 2.3, 1); nu.renderOrder = 1.5; g.add(nu); v.nucleus = nu;
     vis.clouds.forEach(function (c) {
       var m = new T.Mesh(sphereGeo, cloudMatFor(c.occ));
       m.scale.setScalar(p.rc);
@@ -5357,6 +5378,7 @@ var qrcode = function() {
   function disposeAtomView(v) {
     R.root.remove(v.group);
     v.label.material.dispose();
+    if (v.nucleus) v.nucleus.material.dispose();
     if (v.shadow) { R.root.remove(v.shadow); v.shadow.material.dispose(); }
     if (v.charge) { R.root.remove(v.charge); v.charge.material.dispose(); }
     if (v.delta) { R.root.remove(v.delta); v.delta.material.dispose(); }
@@ -5465,6 +5487,8 @@ var qrcode = function() {
       vis.clouds.forEach(function (c, i) {
         var m = v.clouds[i]; if (!m) return;
         m.position.copy(c.dir).multiplyScalar(c.occ === 0 ? 0 : off);   /* freie Einzelwolke mittig, gebunden zum Partner */
+        /* mittige Wolke (freies H/He, Heliumschale): Elektronen neben den Kern, nicht auf das Symbol */
+        if (m.userData.dots) m.userData.dots.position.copy(c.dir).multiplyScalar(c.occ && off === 0 ? 0.55 : 0);
         if (c.idx < 0) { m.visible = true; m.material = mats.double; m.scale.setScalar(p.rc); if (m.userData.dots) m.userData.dots.visible = ui.electrons; return; }
         var cl = a.clouds[c.idx];
         m.visible = !cl.bond || cl.ion === 'gain';
