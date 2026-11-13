@@ -23,6 +23,7 @@ if (out) fs.mkdirSync(out, { recursive: true });
   const vis = sel => page.$eval(sel, e => !e.hidden && e.offsetParent !== null);
   // Seitenleiste rechts mit den Bereichen „Darstellung“, „Atome“ und „Erweitert“: öffnen, falls zu
   const openView = async () => { if (await page.$eval('#sideBody', e => e.hidden)) await page.click('#sideToggle'); };
+  const openPse = async () => { if (await page.$eval('#dock', e => e.hidden)) await page.click('#tabPse'); };
   const openAdv = async () => { if (await page.$eval('#advBody', e => e.hidden)) await page.click('#tabAdv'); };
   const usable = sel => page.$eval(sel, e => !e.hidden && !e.disabled && e.offsetParent !== null);
 
@@ -207,8 +208,32 @@ if (out) fs.mkdirSync(out, { recursive: true });
   await page.waitForTimeout(200);
   ok(await page.evaluate(() => { const k = window.__kwm, b = k.ui.selBond && k.world.bond(k.ui.selBond); return k.ui.advanced && !!b && k.world.atom(b.a).sym === 'C' && k.world.atom(b.b).sym === 'C'; }), '„Mit Ethan ausprobieren“: Erweitert an, C–C-Bindung gewählt');
   ok(await vis('#bbNewman'), '„Mit Ethan ausprobieren“: Newman-Projektion sichtbar');
+  // Layout: Seitenbereich endet über der Bindungsleiste, Hinweiszeile überdeckt sie nicht
+  const box = sel => page.$eval(sel, e => { const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom }; });
+  const cut = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+  await page.evaluate(() => { const s = document.getElementById('status'); s.textContent = 'Eine lange Hinweiszeile zum Testen der Lage über der Bindungsleiste.'; s.hidden = false; window.__kwm.refresh(); });
+  ok((await box('#advBody')).b <= (await box('#bondbar')).t, 'Seitenbereich „Erweitert“ endet über der Bindungsleiste');
+  ok(!cut(await box('#status'), await box('#bondbar')), 'Hinweiszeile überdeckt die Bindungsleiste nicht');
   await page.click('#advRotHelp');
   ok(!(await vis('#advRotText')), 'Anleitung klappt wieder zu');
+
+  // Werkzeugleiste: Modi als Gruppe, altes Dock entfernt
+  ok(await page.$$eval('#tbModes .tb', bs => bs.map(b => b.id).join()) === 'tb-move,tb-rotate,tb-height', 'Bewegen, Drehen, Höhe als Gruppe');
+  ok(!(await page.$('#dockToggle')), 'alter Knopf „Ausblenden“ des Docks entfernt');
+
+  // Neue Atome landen sichtbar auf der Fläche und nicht hinter der Infokarte
+  await page.evaluate(() => { const k = window.__kwm; k.world.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('h2o'); k.ui.selAtom = null; k.refresh(); });
+  await openPse();
+  for (const s of ['C', 'N', 'O', 'F', 'Cl', 'S']) await page.click(`#pse button.el[data-sym="${s}"]`);
+  const hidden = await page.evaluate(() => {
+    const k = window.__kwm, st = document.getElementById('stage').getBoundingClientRect();
+    const blockers = ['info', 'toolbar', 'sidePanels'].map(id => document.getElementById(id).getBoundingClientRect()).filter(r => r.width);
+    return k.world.atoms.slice(3).filter(a => {
+      const c = a.pos.clone().project(k.R.camera), x = st.left + (c.x + 1) / 2 * st.width, y = st.top + (1 - c.y) / 2 * st.height;
+      return x < st.left || x > st.right || y < st.top || y > st.bottom || blockers.some(r => x > r.left && x < r.right && y > r.top && y < r.bottom);
+    }).map(a => a.sym);
+  });
+  ok(hidden.length === 0, 'neue Atome sichtbar, nicht hinter Karten oder Leisten' + (hidden.length ? ': ' + hidden.join() : ''));
 
   // Speichern über Neuladen (gleiche Seite, gleicher localStorage)
   await page.evaluate(() => { const k = window.__kwm; k.world.load({ atoms: [], bonds: [], nid: 1, bid: 1 }); k.addExample('h2o'); k.addProton(); });
@@ -234,6 +259,15 @@ if (out) fs.mkdirSync(out, { recursive: true });
   console.log('  Handy: Bindungsleiste', JSON.stringify(bb));
   ok(bb.newman && bb.left >= 0 && bb.right <= 390, 'Handy: Bindungsleiste mit Newman-Projektion innerhalb der Bildschirmbreite');
   ok(bb.height <= (bb.stageBottom - bb.stageTop) * 0.5, 'Handy: Bindungsleiste belegt höchstens die halbe Arbeitsfläche');
+  // Handy: Seitenbereich als Blatt von unten, über der Bindungsleiste, Werkzeugleiste und Reiter bleiben frei
+  if (await phone.$eval('#sideBody', e => e.hidden)) await phone.click('#sideToggle');
+  const pb = await phone.evaluate(() => {
+    const r = id => { const q = document.getElementById(id).getBoundingClientRect(); return { l: q.left, t: q.top, r: q.right, b: q.bottom }; };
+    const t = document.querySelector('.side-tabs').getBoundingClientRect();
+    return { sheet: r('sideBody'), bar: r('bondbar'), tool: r('toolbar'), tabsLeft: t.left };
+  });
+  ok(pb.sheet.t >= pb.tool.b && pb.sheet.b <= pb.bar.t, 'Handy: Blatt zwischen Werkzeugleiste und Bindungsleiste');
+  ok(pb.sheet.r <= pb.tabsLeft && pb.tabsLeft > 300, 'Handy: Reiter rechts neben dem Blatt');
   await shot(phone, 'handy.png');
 
   ok(errors.length === 0, 'keine JS-Fehler' + (errors.length ? ': ' + errors.join(' | ') : ''));

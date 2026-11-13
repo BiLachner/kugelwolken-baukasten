@@ -13,6 +13,15 @@
 - **Einheitliche Pfeile zum Ein- und Ausklappen:** Infokarte und Aufgabenkarte haben denselben Pfeilknopf. Er zeigt nach unten, wenn die Karte offen ist, und nach rechts, wenn sie zu ist.
 - Die eingeklappte Infokarte zeigt „Nichts ausgewählt.“ bzw. „Die Fläche ist leer.“ und ist nicht mehr leer.
 
+### Layout
+
+- **Keine Überdeckung mit der Bindungsleiste:** Die Seitenleiste endet über der Bindungsleiste, ein langer Bereich scrollt.
+- **Handy:** Ein Bereich der Seitenleiste öffnet sich als Blatt von unten. Werkzeugleiste und Reiter bleiben frei.
+- **Werkzeugleiste:** „Bewegen“, „Drehen“ und „Höhe“ bilden eine Gruppe, in der genau einer aktiv ist. „Einrasten“ zeigt seinen Zustand mit einem Punkt. So wirkt es nicht mehr wie ein zweiter aktiver Modus. Die Untermenüs „Löschen“ und „Ansicht“ nutzen denselben Pfeil wie die Karten.
+- **Hinweiszeile unten mittig:** Sie steht über Bindungsleiste, Infokarte bzw. offenem Blatt und wird nicht mehr von Menüs verdeckt.
+- **Neue Atome und Beispiele** landen um die Blickmitte herum, möglichst sichtbar und nicht hinter Karten oder Leisten.
+- Reste des früheren Periodensystem-Docks unter der Fläche („Ausblenden“) entfernt.
+
 ## Version 0.11.1 (13.11.2026)
 
 - **Neue Lizenz: CC BY-NC-SA 4.0** statt CC BY-NC-ND 4.0. Veränderte Fassungen dürfen jetzt weitergegeben werden, wenn sie nicht kommerziell sind und unter derselben Lizenz stehen.
