@@ -132,6 +132,10 @@ button { font: inherit; color: inherit; }
 #gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
 #gl.grabbing { cursor: grabbing; }
 #gl.over-atom { cursor: pointer; }
+/* Über Atom oder Bindung (und beim Ziehen daran) zeigt der Zeiger den aktiven Modus; freie Fläche: Hand (Ansicht drehen) */
+#gl.over-atom[data-mode="move"], #gl[data-drag="move"] { cursor: move; }
+#gl.over-atom[data-mode="rotate"], #gl[data-drag="rotate"] { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='-1 -1 26 26' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg stroke='white' stroke-width='5'%3E%3Cpath d='M20 12a8 8 0 1 1-2.6-5.9'/%3E%3Cpath d='M20 4v5h-5'/%3E%3C/g%3E%3Cg stroke='black' stroke-width='2.2'%3E%3Cpath d='M20 12a8 8 0 1 1-2.6-5.9'/%3E%3Cpath d='M20 4v5h-5'/%3E%3C/g%3E%3C/svg%3E") 13 13, alias; }
+#gl.over-atom[data-mode="height"], #gl[data-drag="height"] { cursor: ns-resize; }
 
 #toolbar {
   position: absolute; top: 10px; left: 10px; right: 10px; display: flex; gap: 4px; align-items: stretch;
@@ -4989,6 +4993,7 @@ var qrcode = function() {
     ['move', 'rotate', 'height'].forEach(function (m) {
       var on = ui.mode === m; tbEls[m].classList.toggle('on', on); tbEls[m].setAttribute('aria-pressed', on ? 'true' : 'false');
     });
+    if (R.canvas) R.canvas.setAttribute('data-mode', ui.mode);   /* Mauszeiger je Modus (CSS) */
     [['snap', ui.snap], ['labels', ui.labels], ['polar', ui.polar], ['lewis', ui.lewis], ['electrons', ui.electrons], ['rings', ui.rings], ['spin', ui.spin], ['hbonds', ui.hbonds], ['advanced', ui.advanced]].forEach(function (p) {
       tbEls[p[0]].classList.toggle('on', p[1]); tbEls[p[0]].setAttribute('aria-pressed', p[1] ? 'true' : 'false');
     });
@@ -6254,7 +6259,12 @@ var qrcode = function() {
     else if (hit && hit.type === 'bond') dragInfo = { kind: 'bondtap', bond: hit.bond, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false, id: e.pointerId,
       pointerType: e.pointerType, button: e.button, shiftKey: e.shiftKey };
     else dragInfo = { kind: 'orbit', x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, moved: false, id: e.pointerId };
-    R.canvas.classList.add('grabbing');
+    if (dragInfo && dragInfo.kind !== 'orbit') {
+      /* Zeiger zeigt, was das Ziehen tut (rechte Maustaste: Höhe, Umschalt: Drehen) */
+      var dm = dragInfo.mode || ui.mode;
+      if (e.pointerType === 'mouse') { if (e.button === 2) dm = 'height'; else if (e.shiftKey) dm = 'rotate'; }
+      R.canvas.setAttribute('data-drag', dm);
+    } else { R.canvas.classList.remove('over-atom'); R.canvas.classList.add('grabbing'); }
     e.preventDefault();
   }
 
@@ -6296,7 +6306,7 @@ var qrcode = function() {
   function cancelDrag() {
     var d = dragInfo;
     dragInfo = null;
-    if (R.canvas) R.canvas.classList.remove('grabbing');
+    if (R.canvas) { R.canvas.classList.remove('grabbing'); R.canvas.removeAttribute('data-drag'); }
     clearOverlap();
     if (d && d.kind === 'atom' && d.moved) { pushHistory(d.before); afterChange(); }
   }
@@ -6329,7 +6339,7 @@ var qrcode = function() {
   function endDrag() {
     var d = dragInfo;
     dragInfo = null;
-    R.canvas.classList.remove('grabbing');
+    R.canvas.classList.remove('grabbing'); R.canvas.removeAttribute('data-drag');
     if (!d) return;
     if (d.kind === 'bondtap') { ui.selBond = d.bond.id; ui.selAtom = null; refresh(); return; }
     if (d.kind === 'orbit') {

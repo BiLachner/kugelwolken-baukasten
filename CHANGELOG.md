@@ -23,6 +23,8 @@
 - **Einheitliche Pfeile zum Ein- und Ausklappen:** Infokarte und Aufgabenkarte haben denselben Pfeilknopf. Er zeigt nach unten, wenn die Karte offen ist, und nach rechts, wenn sie zu ist.
 - Die eingeklappte Infokarte zeigt „Nichts ausgewählt.“ bzw. „Die Fläche ist leer.“ und ist nicht mehr leer.
 
+- **Mauszeiger zeigt den Modus:** Über einem Atom oder einer Bindung und beim Ziehen daran zeigt der Zeiger, was passiert: vier Pfeile bei „Bewegen“, ein Drehpfeil bei „Drehen“, ein Hoch-runter-Pfeil bei „Höhe“ (auch mit rechter Maustaste bzw. Umschalttaste). Auf der freien Fläche bleibt die Hand zum Drehen der Ansicht.
+
 ### Layout
 
 - **Keine Überdeckung mit der Bindungsleiste:** Die Seitenleiste endet über der Bindungsleiste, ein langer Bereich scrollt.
