@@ -4725,6 +4725,7 @@ var qrcode = function() {
   var R = {};                      /* Renderer, Szene, Kamera */
   var orbit = { theta: 0.55, phi: 1.1, r: 10, target: null };
   var STORE_KEY = 'kwm.v1';
+  var SESSION_KEY = 'kwm.tab';   /* sessionStorage: Fläche gehört zu diesem Tab */
   var protonBlocked = false;       /* Aufgabe beschränkt das Periodensystem ohne H */
 
   var ORDER_NAMES = { 1: 'Einfachbindung', 2: 'Doppelbindung', 3: 'Dreifachbindung' };
@@ -6452,27 +6453,35 @@ var qrcode = function() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(function () {
       try {
+        try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (e2) { /* nicht verfügbar */ }
         localStorage.setItem(STORE_KEY, JSON.stringify({ w: world.serialize(), ui: { snap: ui.snap, labels: ui.labels, polar: ui.polar, lewis: ui.lewis, electrons: ui.electrons, rings: ui.rings, infoMin: ui.infoMin, mode: ui.mode, advanced: ui.advanced, hbonds: ui.hbonds, shadow: ui.shadow, ball: ui.ball } }));
       } catch (e) { /* Speicher nicht verfügbar */ }
     }, 400);
   }
+  /* Einstellungen bleiben im Browser gespeichert. Die Fläche kommt nur im selben Tab zurück (Neu laden, F5);
+     ein neuer Aufruf beginnt mit dem vorbereiteten Wasser-Set (starterScene). */
   function restore() {
     try {
       var raw = localStorage.getItem(STORE_KEY);
       if (!raw) return false;
       var st = JSON.parse(raw);
-      if (!st || !st.w || !Array.isArray(st.w.atoms) || !st.w.atoms.length) return false;
+      if (!st) return false;
+      if (st.ui) { ui.snap = st.ui.snap !== false; ui.labels = st.ui.labels !== false; ui.polar = !!st.ui.polar; ui.lewis = !!st.ui.lewis; ui.electrons = !!st.ui.electrons; ui.rings = st.ui.rings !== false; ui.infoMin = !!st.ui.infoMin; ui.advanced = !!st.ui.advanced; ui.hbonds = !!st.ui.hbonds; ui.ball = (st.ui.ball === 0 || st.ui.ball === 1 || st.ui.ball === 2) ? st.ui.ball : 1; ui.shadow = st.ui.shadow !== false; if (/^(move|rotate|height)$/.test(st.ui.mode)) ui.mode = st.ui.mode; }
+      var sameTab = false;
+      try { sameTab = sessionStorage.getItem(SESSION_KEY) === '1'; } catch (e2) { /* nicht verfügbar */ }
+      if (!sameTab || !st.w || !Array.isArray(st.w.atoms) || !st.w.atoms.length) return false;
       var ok = st.w.atoms.every(function (a) { return K.ELEMENTS[a.s] && Array.isArray(a.p) && Array.isArray(a.q); });
       if (!ok) return false;
       world.load(st.w);
-      if (st.ui) { ui.snap = st.ui.snap !== false; ui.labels = st.ui.labels !== false; ui.polar = !!st.ui.polar; ui.lewis = !!st.ui.lewis; ui.electrons = !!st.ui.electrons; ui.rings = st.ui.rings !== false; ui.infoMin = !!st.ui.infoMin; ui.advanced = !!st.ui.advanced; ui.hbonds = !!st.ui.hbonds; ui.ball = (st.ui.ball === 0 || st.ui.ball === 1 || st.ui.ball === 2) ? st.ui.ball : 1; ui.shadow = st.ui.shadow !== false; if (/^(move|rotate|height)$/.test(st.ui.mode)) ui.mode = st.ui.mode; }
       return true;
     } catch (e) { return false; }
   }
+  /* Startbild: ein O und zwei H, sofort zu Wasser zusammenschiebbar. Schräg vorn/hinten statt nebeneinander,
+     etwas links der Mitte: so frei zwischen Hilfekarte und Periodensystem, auch auf dem Tablet (1024 × 640) */
   function starterScene() {
-    world.addAtom('O', new T.Vector3(0, 0, 0), new T.Quaternion().setFromEuler(new T.Euler(0.4, 0.6, 0.2)));
-    world.addAtom('H', new T.Vector3(-3.6, 0, 1.2), new T.Quaternion().setFromEuler(new T.Euler(1.0, 0.3, 0.5)));
-    world.addAtom('H', new T.Vector3(3.5, 0, -1.0), new T.Quaternion().setFromEuler(new T.Euler(0.2, 1.1, 0.7)));
+    world.addAtom('O', new T.Vector3(-0.68, 0, 0.42), new T.Quaternion().setFromEuler(new T.Euler(0.4, 0.6, 0.2)));
+    world.addAtom('H', new T.Vector3(1.75, 0, 2.09), new T.Quaternion().setFromEuler(new T.Euler(1.0, 0.3, 0.5)));
+    world.addAtom('H', new T.Vector3(-3.12, 0, -1.26), new T.Quaternion().setFromEuler(new T.Euler(0.2, 1.1, 0.7)));
   }
 
   /* ---------- Tastatur ---------- */

@@ -23,6 +23,7 @@
 - **Einheitliche Pfeile zum Ein- und Ausklappen:** Infokarte und Aufgabenkarte haben denselben Pfeilknopf. Er zeigt nach unten, wenn die Karte offen ist, und nach rechts, wenn sie zu ist.
 - Die eingeklappte Infokarte zeigt „Nichts ausgewählt.“ bzw. „Die Fläche ist leer.“ und ist nicht mehr leer.
 
+- **Start immer mit dem Wasser-Set:** Jeder neue Aufruf beginnt mit einem O und zwei H, die gut sichtbar zwischen Hilfekarte und Periodensystem liegen (auch auf dem Tablet). Die Fläche kommt nur beim Neuladen im selben Tab zurück, sonst blieben alte Versuche auf der Fläche liegen, auch nach dem Leeren des Browser-Caches. Einstellungen wie Atomkugel und Elektronen bleiben wie bisher gespeichert.
 - **Atomkern als dunkler Punkt mit „+“** (aus der Testversion von Birgit Lachner): Der Kern ist als positiv geladen zu erkennen und unterscheidet sich klar von den Elektronen. Er ist etwas kleiner als bisher und liegt in den Wolken.
 - **Elektronen als dunkle Kügelchen in der Wolke** (wie in der Testversion von Birgit Lachner): Die Wolke liegt halbdurchsichtig darüber und tönt sie, Atome davor verdecken sie. Bisher waren es weiße Kringel, die über allem lagen. Bei einem freien H-Atom sitzt das Elektron neben dem Kern und nicht mehr auf dem Symbol.
 - **Mauszeiger zeigt den Modus:** Über einem Atom oder einer Bindung und beim Ziehen daran zeigt der Zeiger, was passiert: vier Pfeile bei „Bewegen“, ein Drehpfeil bei „Drehen“, ein Hoch-runter-Pfeil bei „Höhe“ (auch mit rechter Maustaste bzw. Umschalttaste). Auf der freien Fläche bleibt die Hand zum Drehen der Ansicht.
